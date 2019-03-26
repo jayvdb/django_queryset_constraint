@@ -1,70 +1,52 @@
-Postgres audit database via triggers
-====================================
+Django Constraint Triggers
+==========================
 
-This app sets up a postgres audit database via triggers.
-See https://wiki.postgresql.org/wiki/Audit_trigger_91plus
-and https://github.com/2ndQuadrant/audit-trigger/
-for more information.
-
+This app sets up postgres triggers to check invariants.
 
 Installation
 ============
-`pip install postgres_audit_triggers`
+```
+pip install django_constraint_triggers
+```
+(Eventually)
 
 
 Usage
 =====
 
-- Add the `postgres_audit_triggers` app to `INSTALLED_APPS` *before* any apps that will be audited:
+- Add the `django_constraint_triggers` app to `INSTALLED_APPS` *before* any apps that will be checked:
 
 ```
 # settings.py
 INSTALLED_APPS = {
     'django.contrib.postgres',
-    'postgres_audit_triggers',
+    'django_constraint_triggers',
     ...
 }
 ```
 
-- Install the `postgres_audit_triggers` middleware:
-
-```
-# settings.py
-MIDDLEWARE = [
-    ...
-    'postgres_audit_triggers.middleware.AuditMiddleware',
-]
-```
-
-This middleware will add metadata to the audit row. To send metadata, the client must send a
-`Postgres-Audit-Triggers-Meta` header in the request to your Django view. The data within
-that header must be JSON serializable to a python dictionary.
-
-- Run migrations: `python manage.py migrate postgres_audit_triggers`
-
-- Add `audit_trigger = True` to the Model Meta options of the models that will be audited:
+- Add `constraint_triggers` to the Model Meta options of the models that will be checked:
 
 ```
 # models.py
-class MyAuditedModel(models.Model):
+class MyCheckedModel(models.Model):
     ...
     class Meta:
-        audit_trigger = True
-        ...
+        def constraint_triggers():
+            # Check that new entries are always older than old ones
+            return [
+                {
+                    'name': 'Check older',
+                    'query': MyCheckedModel.objects.filter(
+                        age__gte=RawSQL('NEW.age', ())
+                    )
+                },
+            ]
+
+    age = models.PositiveIntegerField()
 ```
 
 - Make migrations: `python manage.py makemigrations`
 - Run migrations: `python manage.py migrate`
 
-Triggers introduce performance overhead. In certain cases, you may need to disable triggers while
-performing bulk operations. To turn off all triggers, a decorator is provided:
-
-```
-from postgres_audit_triggers.decorators import disable_triggers
-
-
-@disable_triggers
-def foo():
-    # auditing will not be triggered on any database operations performed here
-    Bar.objects.bulk_create(items)
-```
+Triggers introduce performance overhead. 
