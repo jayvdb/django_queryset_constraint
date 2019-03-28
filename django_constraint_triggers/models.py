@@ -43,6 +43,7 @@ class M(object):
         }
 
 
+# TODO: Move these models into test
 # TODO: Check / reformat name of constraint
 class OneNotAllowed(models.Model):
     class Meta:

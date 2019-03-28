@@ -1,6 +1,8 @@
 Django Constraint Triggers
 ==========================
 
+[![Build Status](https://travis-ci.org/magenta-aps/django_constraint_triggers.svg?branch=master)](https://travis-ci.org/magenta-aps/django_constraint_triggers)
+
 This app sets up postgres triggers to check invariants.
 
 Installation
