@@ -1,4 +1,9 @@
-from mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:  # Handle python 2.7
+    from mock import patch
+
+from itertools import chain
 
 from django.core.management.commands import makemigrations
 from django.db.migrations import autodetector, state
@@ -24,6 +29,34 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
         self.generate_added_constraint_triggers()
         self.generate_removed_constraint_triggers()
 
+    def generate_created_models(self):
+        super(MigrationAutodetector, self).generate_created_models()
+        # Install constraint triggers
+        if isinstance(self.old_model_keys, list):  # Handle python 2.7
+            old_keys = self.old_model_keys + self.old_unmanaged_keys
+        elif isistance(self.old_model_keys, set):
+            old_keys = self.old_model_keys | self.old_unmanaged_keys
+
+        added_models = [x for x in self.new_model_keys if x not in old_keys]
+        added_unmanaged_models = [x for x in self.new_unmanaged_keys if x not in old_keys]
+        all_added_models = chain(
+            sorted(added_models, key=self.swappable_first_key, reverse=True),
+            sorted(added_unmanaged_models, key=self.swappable_first_key, reverse=True)
+        )
+        option_name = AddConstraintTrigger.option_name
+        for app_label, model_name in all_added_models:
+            model_state = self.to_state.models[app_label, model_name]
+            constraints = model_state.options.pop(option_name)
+            for trigger in constraints:
+                self.add_operation(
+                    app_label,
+                    AddConstraintTrigger(
+                        model_name=model_name,
+                        trigger_name=trigger['name'],
+                        query=trigger['query'],
+                    )
+                )
+
     def create_altered_constraint_triggers(self):
         option_name = AddConstraintTrigger.option_name
         for app_label, model_name in sorted(self.kept_model_keys):
@@ -33,12 +66,8 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
 
             # Get old constraints as array
             old_constraints = old_model_state.options.get(option_name, [])
+            new_constraints = new_model_state.options.get(option_name, [])
 
-            # Get new constraints as function --> array, and evaluate it
-            new_constraints = new_model_state.options.get(option_name, lambda: [])()
-            # Convert query argument to actual SQL
-            for constraint in new_constraints:
-                constraint['query'] = str(constraint['query'].query)
             # Figure out which constraints were added / removed
             add_constraints = [c for c in new_constraints if c not in old_constraints]
             rem_constraints = [c for c in old_constraints if c not in new_constraints]

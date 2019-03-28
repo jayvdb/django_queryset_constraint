@@ -26,9 +26,15 @@ matrix:
     - python: 3.7-dev
       env: DJANGO_VERSION=1.11
 
+services:
+      - postgresql
+
 install:
   - pip install -r requirements.txt
    # Install whatever version of Django that's listed above
   - pip install -q Django==$DJANGO_VERSION
+
 script:
-  - python runtests.py
+  - python manage.py makemigrations
+  - python manage.py migrate
+  - python manage.py test

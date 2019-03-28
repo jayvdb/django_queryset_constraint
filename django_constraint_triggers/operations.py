@@ -1,16 +1,46 @@
 from django.db.migrations.operations.models import IndexOperation
+from django.apps import apps
 
 
 def generate_names(trigger_name, table):
+    # We cannot include trigger_name + table as it may be too long.
+    # Thus we need to truncate. Postgres limits us to 63 characters.
+    # We know our prefix is 13 characters, thus we need to limit to 50.
+    # To be safe, we will limit to 40.
+    hashy = hex(hash(trigger_name + table))[3:40+3]
     # Prepare function and trigger name
-    prefix = ['dct', table]
-    function_name = '__'.join(prefix + ['func', trigger_name]) + '()'
-    trigger_name = '__'.join(prefix + ['trig', trigger_name])
+    function_name = '__'.join(['dct', 'func', hashy]) + '()'
+    trigger_name = '__'.join(['dct', 'trig', hashy])
     return function_name, trigger_name
 
 
-def install_trigger(schema_editor, trig_name, trig_type, query, error, table):
+def install_trigger(schema_editor, trig_name, trig_type, query, model, error=None):
+    table = model._meta.db_table
     function_name, trigger_name = generate_names(trig_name, table)
+
+    # No error message - Default to 'Invariant broken'
+    if error is None:
+        error = 'Invariant broken'
+
+    # No app label - Assume it is the same as model
+    app_label = query.app_label
+    if app_label is None:
+        app_label = model._meta.app_label
+
+    # Load the affected model in
+    model = apps.get_model(app_label, query.model)
+    # Run through all operations to generate our queryset
+    result = model
+    for operation in query.operations:
+        if operation['type'] == '__getattribute__':
+            result = getattr(result, operation['name'])
+        elif operation['type'] == '__call__':
+            result = result(*operation['args'], **operation['kwargs'])
+        else:
+            raise Exception("Unknown operation!")
+    # Generate query from queryset
+    query = str(result.query)
+
     # Install function
     function = """
         CREATE FUNCTION {}
@@ -46,7 +76,8 @@ def install_trigger(schema_editor, trig_name, trig_type, query, error, table):
     schema_editor.execute(trigger)
 
 
-def remove_trigger(schema_editor, trig_name, table):
+def remove_trigger(schema_editor, trig_name, model):
+    table = model._meta.db_table
     function_name, trigger_name = generate_names(trig_name, table)
     # Remove trigger
     schema_editor.execute(
@@ -76,26 +107,22 @@ class AddConstraintTrigger(IndexOperation):
             model_state.options[self.option_name] = []
         model_state.options[self.option_name].append(
             {
-                u'name': unicode(self.trigger_name),
-                # u'type': unicode(self.trigger_type),
-                u'query': unicode(self.query),
+                u'name': self.trigger_name,
+                u'query': self.query,
             }
         )
         state.reload_model(app_label, self.model_name_lower, delay=True)
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.model_name)
-        table = model._meta.db_table
         if self.allow_migrate_model(schema_editor.connection.alias, model):
             install_trigger(schema_editor, self.trigger_name,
-                            self.trigger_type, self.query, 'Invariant broken',
-                            table)
+                            self.trigger_type, self.query, model)
 
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.model_name)
-        table = model._meta.db_table
         if self.allow_migrate_model(schema_editor.connection.alias, model):
-            remove_trigger(schema_editor, self.trigger_name, table)
+            remove_trigger(schema_editor, self.trigger_name, model)
 
     def deconstruct(self):
         return self.__class__.__name__, [], {
