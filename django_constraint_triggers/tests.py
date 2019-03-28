@@ -2,6 +2,7 @@
 from unittest import skipIf
 
 import django
+from django.apps import apps
 from django.test import (
     TransactionTestCase,
 )
@@ -13,35 +14,68 @@ from parameterized import parameterized, parameterized_class
 from django_constraint_triggers.models import *
 
 
-constraint_exception = InternalError
+def create(self, model, value):
+    model.objects.create(age=value)
+
+def update(self, model, value):
+    model.objects.create(age=0)
+    model.objects.filter(age=0).update(age=value)
+
+def save(self, model, value):
+    model(age=value).save()
+
+def bulk_create(self, model, value):
+    model.objects.bulk_create([model(age=value)])
+
+def get_or_create(self, model, value):
+    model.objects.get_or_create(age=value)
+
+def update_or_create(self, model, value):
+    model.objects.update_or_create(age=value)
 
 
-class TestTesting(TransactionTestCase):
+# Test that our triggers apply to all methods of insertion / updating
+@parameterized_class([
+    {"save_method": create},
+    {"save_method": update},
+    {"save_method": save},
+    {"save_method": bulk_create},
+    {"save_method": get_or_create},
+    {"save_method": update_or_create},
+])
+class TestAge(TransactionTestCase):
 
-    def test_tests(self):
-        """Test that we can test."""
-        self.assertTrue(True)
+    def disallow(self, model_name, disallow):
+        # Load the affected model in
+        model = apps.get_model('django_constraint_triggers', model_name)
+        # Prepare exception table
+        # if 1, expect exception, if 0 do not expect one
+        functions = {
+            1: [0, 1, 0, 0],
+            2: [0, 1, 1, 0],
+            3: [0, 1, 1, 1],
+        }
+        for idx, val in enumerate(functions[disallow]):
+            if val:
+                with self.assertRaises(InternalError):
+                    self.save_method(model, idx)
+            else:
+                self.save_method(model, idx)
 
-    def test_one_not_allowed(self):
-        OneNotAllowed.objects.create(age=0)
-        with self.assertRaises(constraint_exception):
-            OneNotAllowed.objects.create(age=1)
-        OneNotAllowed.objects.create(age=2)
-        OneNotAllowed.objects.create(age=3)
+    @parameterized.expand([
+        ['Disallow1', 1],
+        ['Disallow12In', 2],
+        ['Disallow12Range', 2],
+        ['Disallow12Multi', 2],
+        # ['Disallow13GT', 3],
+    ])
+    def test_disallow(self, model, disallow):
+        self.disallow(model, disallow)
 
+    @parameterized.expand([
+        ['Disallow1Q', 1],
+        ['Disallow12Q', 2],
+    ])
     @skipIf(django.VERSION[0] == 1, "Model utilized serialized Q objects")
-    def test_one_and_two_not_allowed(self):
-        OneAndTwoNotAllowed.objects.create(age=0)
-        with self.assertRaises(constraint_exception):
-            OneAndTwoNotAllowed.objects.create(age=1)
-        with self.assertRaises(constraint_exception):
-            OneAndTwoNotAllowed.objects.create(age=2)
-        OneAndTwoNotAllowed.objects.create(age=3)
-
-    def test_one_and_two_not_allowed_two_constraints(self):
-        OneAndTwoNotAllowedTwoConstraints.objects.create(age=0)
-        with self.assertRaises(constraint_exception):
-            OneAndTwoNotAllowedTwoConstraints.objects.create(age=1)
-        with self.assertRaises(constraint_exception):
-            OneAndTwoNotAllowedTwoConstraints.objects.create(age=2)
-        OneAndTwoNotAllowedTwoConstraints.objects.create(age=3)
+    def test_disallow_django2(self, model, disallow):
+        self.disallow(model, disallow)

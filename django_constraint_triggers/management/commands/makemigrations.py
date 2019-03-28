@@ -46,7 +46,7 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
         option_name = AddConstraintTrigger.option_name
         for app_label, model_name in all_added_models:
             model_state = self.to_state.models[app_label, model_name]
-            constraints = model_state.options.pop(option_name)
+            constraints = model_state.options.get(option_name, [])
             for trigger in constraints:
                 self.add_operation(
                     app_label,

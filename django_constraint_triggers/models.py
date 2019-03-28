@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import models
 from django.db.models import Q
 
 
 class M(object):
-    def __init__(self, model, error=None, app_label=None, operations=None):
+    def __init__(self, model=None, error=None, app_label=None, operations=None):
         self.model = model
         self.app_label = app_label
         self.operations = operations
@@ -45,51 +46,64 @@ class M(object):
 
 # TODO: Move these models into test
 # TODO: Check / reformat name of constraint
-class OneNotAllowed(models.Model):
+class AgeModel(models.Model):
     class Meta:
-        constraint_triggers = [
-            {
-                'name': 'disallow_one',
-                'query': M('OneNotAllowed').objects.filter(
-                    age=1
-                ),
-            },
-        ]
+        abstract = True
     age = models.PositiveIntegerField()
 
+class AllowAll(AgeModel):
+    pass
 
-import django
-if django.VERSION[0] == 2:
-    class OneAndTwoNotAllowed(models.Model):
+# TODO: Changing M to classname results in broken migration
+class Disallow1(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': '1',
+            'query': M().objects.filter(age=1)
+        }]
+
+class Disallow12In(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': 'IN12',
+            'query': M().objects.filter(age__in=[1,2])
+        }]
+
+class Disallow12Range(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': 'GTE1LTE2',
+            'query': M().objects.filter(age__gte=1).filter(age__lte=2)
+        }]
+
+class Disallow12Multi(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': '1',
+            'query': M().objects.filter(age=1)
+        }, {
+            'name': '2',
+            'query': M().objects.filter(age=2)
+        }]
+
+class Disallow13GT(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': 'GTE1',
+            'query': M().objects.filter(age__gte=1)
+        }]
+
+if django.VERSION[0] >= 2:
+    class Disallow1Q(AgeModel):
         class Meta:
-            constraint_triggers = [
-                {
-                    'name': 'disallow_one_and_two',
-                    'query': M('OneAndTwoNotAllowed').objects.filter(
-                        Q(age=1) | Q(age=2)
-                    )
-                },
-            ]
-        age = models.PositiveIntegerField()
+            constraint_triggers = [{
+                'name': 'Q1',
+                'query': M().objects.filter(Q(age=1))
+            }]
 
-
-class OneAndTwoNotAllowedTwoConstraints(models.Model):
-    class Meta:
-        constraint_triggers = [
-            {
-                'name': 'disallow_one',
-                'query': M('OneAndTwoNotAllowedTwoConstraints').objects.filter(
-                    age=1
-                )
-            },
-            {
-                'name': 'disallow_two',
-                'query': M('OneAndTwoNotAllowedTwoConstraints').objects.filter(
-                    age=2
-                )
-            },
-        ]
-    age = models.PositiveIntegerField()
-
-
-from django.db.models.expressions import RawSQL
+    class Disallow12Q(AgeModel):
+        class Meta:
+            constraint_triggers = [{
+                'name': 'Q12',
+                'query': M().objects.filter(Q(age=1) | Q(age=2))
+            }]
