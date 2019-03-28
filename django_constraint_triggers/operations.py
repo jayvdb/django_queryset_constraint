@@ -36,7 +36,7 @@ def install_trigger(schema_editor, trig_name, trig_type, query, model, error=Non
     result = model
     for operation in query.operations:
         if operation['type'] == '__getattribute__':
-            result = getattr(result, operation['name'])
+            result = getattr(result, str(operation['name']))
         elif operation['type'] == '__call__':
             result = result(*operation['args'], **operation['kwargs'])
         else:
