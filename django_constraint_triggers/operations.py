@@ -1,6 +1,4 @@
-from functools import partial
 from django.db.migrations.operations.models import IndexOperation
-from django.apps import apps
 
 
 def generate_names(trigger_name, table):
@@ -31,24 +29,8 @@ def install_trigger(schema_editor, trig_name, trig_type, query, model, error=Non
     if app_label is None:
         app_label = model._meta.app_label
 
-    # Load the affected model in
-    model = apps.get_model(app_label, model_name)
     # Run through all operations to generate our queryset
-    result = model
-    for operation in query.operations:
-        if operation['type'] == '__getitem__':
-            arg = operation['key']
-            if isinstance(arg, partial):
-                arg = arg()
-            result = result.__getitem__(arg)
-        elif operation['type'] == '__getattribute__':
-            result = getattr(result, *operation['args'], **operation['kwargs'])
-        elif operation['type'] == '__call__':
-            result = result(*operation['args'], **operation['kwargs'])
-        else:
-            raise Exception("Unknown operation!")
-        #func = getattr(result, operation['type'])
-        #result = func(*operation['args'], **operation['kwargs'])
+    result = query.replay(app_label, model_name)
     # Generate query from queryset
     query = str(result.query)
 
