@@ -34,8 +34,10 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
         # Install constraint triggers
         if isinstance(self.old_model_keys, list):  # Handle python 2.7
             old_keys = self.old_model_keys + self.old_unmanaged_keys
-        elif isistance(self.old_model_keys, set):
+        elif isinstance(self.old_model_keys, set):
             old_keys = self.old_model_keys | self.old_unmanaged_keys
+        else:
+            raise Exception("Unknown old_model_keys type!")
 
         added_models = [x for x in self.new_model_keys if x not in old_keys]
         added_unmanaged_models = [x for x in self.new_unmanaged_keys if x not in old_keys]
