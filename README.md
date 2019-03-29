@@ -13,7 +13,7 @@ instance model creations, updates and deletions. However these signals are not
 emmited for queryset operations, and as such cannot be used to maintain data
 invariants.
 
-An attempt to ratify this was made with the [https://github.com/magenta-aps/django-queryset-signals](Django Queryset Signals) library.
+An attempt to ratify this was made with the [Django Queryset Signals](https://github.com/magenta-aps/django-queryset-signals) library.
 While this library comes closer to a reliable solution, it does not succeed,
 as it is stil possible to break the data invariants by accessing the database
 directly.
@@ -59,8 +59,9 @@ class MyCheckedModel(models.Model):
 ```
 
 *Note: The above is clearly a toy example, and could be achieved using
-Django's CheckConstraint (> 2.0) or even using a MinValueValidator on the
-PositiveIntegerField itself.*
+Django's [CheckConstraint](https://docs.djangoproject.com/en/dev/ref/models/constraints/#checkconstraint)
+(> 2.0) or even using a [MinValueValidator](https://docs.djangoproject.com/en/dev/ref/validators/#minvaluevalidator)
+on the [PositiveIntegerField](https://docs.djangoproject.com/en/dev/ref/models/fields/#positiveintegerfield) itself.*
 
 - Make migrations: `python manage.py makemigrations`
 - Run migrations: `python manage.py migrate`
@@ -71,15 +72,15 @@ Support Matrix
 ==============
 This app supports the following combinations of Django and Python:
 
-| Django    | Python                  |
-| --------- | ----------------------- |
-| 1.11 (x)  | 2.7, 3.4, 3.5, 3.6, 3.7 |
-| 2.0       | 3.4, 3.5, 3.6, 3.7      |
-| 2.1       | 3.5, 3.6, 3.7           |
+| Django     | Python                  |
+| ---------- | ----------------------- |
+| 1.11 (`x`) | 2.7, 3.4, 3.5, 3.6, 3.7 |
+| 2.0        | 3.4, 3.5, 3.6, 3.7      |
+| 2.1        | 3.5, 3.6, 3.7           |
 
-x: Functionality is limited on 1.11, as this version does not support
-serialization of queryset expressions, such as Q and F objects. This can
-potentially be ratified using partials inside the M object.
+`x`: Functionality is limited on 1.11, as this version does not support
+serialization of queryset expressions, such as `Q` and `F` objects. This can
+potentially be ratified using partials inside the `M` object.
 
 Caveats
 =======
