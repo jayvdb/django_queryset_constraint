@@ -26,7 +26,7 @@ class M(object):
         try:
             return object.__getattribute__(self, name)
         except AttributeError:
-            self.operations.append({'type': '__getattribute__', 'name': str(name)})
+            self.operations.append({'type': '__getattribute__', 'name': name})
             return self
 
     def __call__(self, *args, **kwargs):
