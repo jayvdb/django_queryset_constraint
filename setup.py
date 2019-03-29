@@ -32,26 +32,26 @@ def read(fname):
         return f.read()
 
 setup(
-    name='django-queryset-signals',
+    name='django_constraint_triggers',
     version='0.1.0',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
-    url='https://github.com/magenta-aps/django-queryset-signals',
-    author='Emil Madsen (Originally Martin P. Hellwig)',
+    url='https://github.com/magenta-aps/django_constraint_triggers',
+    author='Emil Madsen',
     author_email='emil@magenta.dk',
-    description=('A library that will send signals on queryset data '
-                 'manipulation methods.'),
+    description=('A library for writing reliable data invariants in Django.'),
     long_description=read('README.rst'),
-    license='BSD',
+    license='MPL-2.0',
     packages=find_packages(),
     include_package_data=True,
-    download_url='https://github.com/magenta-aps/django-queryset-signals/archive/master.zip',
+    download_url='https://github.com/magenta-aps/django_constraint_triggers/archive/master.zip',
     zip_safe=False,
     install_requires=['Django'],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved',
+        'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
@@ -68,7 +68,6 @@ setup(
         'django',
     ],
     project_urls={
-        'Upstream': 'https://bitbucket.org/hellwig/django-query-signals',
         'Source': 'https://github.com/magenta-aps/django-queryset-signals',
         # TODO: Add documentation URL
     },
