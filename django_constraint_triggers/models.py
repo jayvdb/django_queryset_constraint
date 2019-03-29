@@ -61,9 +61,26 @@ class M(object):
             self.__deep_compare(self.operations, other.operations)
         )
 
-    def replay(self, app_label=None, model_name=None):
+    @staticmethod
+    def deep_deconstruct(node):
+        if isinstance(node, dict):
+            # Dict comparison
+            for key in node:
+                node[key] = M.deep_deconstruct(node[key])
+        elif isinstance(node, list) or isinstance(node, tuple):
+            node = list(node)
+            for idx in range(len(node)):
+                node[idx] = M.deep_deconstruct(node[idx])
+        elif hasattr(node, 'deconstruct'):
+            node = node.deconstruct()
+            node = M.deep_deconstruct(node)
+        return node
+
+    def replay(self):
         # Run through all operations to generate our queryset
-        model = apps.get_model(app_label or self.app_label, model_name or self.model)
+        # TODO: Apply rules recursively to subqueries
+        # TODO: Support Q and F in Django 1.11 using partials
+        model = apps.get_model(self.app_label, self.model)
         result = model
         for operation in self.operations:
             if operation['type'] == '__getitem__':

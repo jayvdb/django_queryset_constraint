@@ -21,16 +21,8 @@ def install_trigger(schema_editor, trig_name, trig_type, query, model, error=Non
     if error is None:
         error = 'Invariant broken'
 
-    # No model - Assume the one we are bound to
-    model_name = query.model or model.__name__
-
-    # No app label - Assume it is the same as model
-    app_label = query.app_label
-    if app_label is None:
-        app_label = model._meta.app_label
-
     # Run through all operations to generate our queryset
-    result = query.replay(app_label, model_name)
+    result = query.replay()
     # Generate query from queryset
     query = str(result.query)
 
