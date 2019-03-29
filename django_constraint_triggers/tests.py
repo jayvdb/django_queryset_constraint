@@ -57,7 +57,7 @@ class TestAge(TransactionTestCase):
         }
         for idx, val in enumerate(functions[disallow]):
             if val:
-                with self.assertRaises(InternalError):
+                with self.assertRaises(InternalError, msg=str(idx)):
                     self.save_method(model, idx)
             else:
                 self.save_method(model, idx)
@@ -75,6 +75,8 @@ class TestAge(TransactionTestCase):
     @parameterized.expand([
         ['Disallow1Q', 1],
         ['Disallow12Q', 2],
+        ['Disallow1Annotate', 1],
+        ['Disallow13Count', 3],
     ])
     @skipIf(django.VERSION[0] == 1, "Model utilized serialized Q objects")
     def test_disallow_django2(self, model, disallow):

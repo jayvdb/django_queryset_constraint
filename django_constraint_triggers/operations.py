@@ -1,3 +1,4 @@
+from functools import partial
 from django.db.migrations.operations.models import IndexOperation
 from django.apps import apps
 
@@ -35,12 +36,19 @@ def install_trigger(schema_editor, trig_name, trig_type, query, model, error=Non
     # Run through all operations to generate our queryset
     result = model
     for operation in query.operations:
-        if operation['type'] == '__getattribute__':
-            result = getattr(result, operation['name'])
+        if operation['type'] == '__getitem__':
+            arg = operation['key']
+            if isinstance(arg, partial):
+                arg = arg()
+            result = result.__getitem__(arg)
+        elif operation['type'] == '__getattribute__':
+            result = getattr(result, *operation['args'], **operation['kwargs'])
         elif operation['type'] == '__call__':
             result = result(*operation['args'], **operation['kwargs'])
         else:
             raise Exception("Unknown operation!")
+        #func = getattr(result, operation['type'])
+        #result = func(*operation['args'], **operation['kwargs'])
     # Generate query from queryset
     query = str(result.query)
 
@@ -108,12 +116,12 @@ class AddConstraintTrigger(IndexOperation):
         model_state = state.models[app_label, self.model_name_lower]
         if self.option_name not in model_state.options:
             model_state.options[self.option_name] = []
-        model_state.options[self.option_name].append(
-            {
-                u'name': self.trigger_name,
-                u'query': self.query,
-            }
-        )
+        entry = {
+            u'name': self.trigger_name,
+            u'query': self.query,
+        }
+        if entry not in model_state.options[self.option_name]:
+            model_state.options[self.option_name].append(entry)
         state.reload_model(app_label, self.model_name_lower, delay=True)
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
