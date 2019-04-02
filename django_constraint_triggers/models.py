@@ -244,7 +244,6 @@ class Disallow12Range(AgeModel):
 
 # These need django 2+ for serialization of queryset expressions.
 if django.VERSION[0] >= 2:
-
     class Disallow1Local(AgeModel):
         class Meta:
             constraint_triggers = [{
