@@ -50,7 +50,7 @@ class MyCheckedModel(models.Model):
     class Meta:
         constraint_triggers = [{
             'name': 'Age > 12',
-            'query': M().objects.filter(
+            'query': M('MyCheckedModel', app_label='test').objects.filter(
                 age__gt=12
             )
         }]

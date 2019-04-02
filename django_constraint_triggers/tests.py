@@ -67,6 +67,13 @@ class TestAge(TransactionTestCase):
         ['Disallow13GT', 3],
         ['Disallow13Count', 3],
         ['AllowOnly0', 3],
+
+        ['P2Disallow1Local', 1],
+        ['P2Disallow1Q', 1],
+        # ['P2Disallow12Q', 2],
+        ['P2Disallow1Annotate', 1],
+        ['P2Disallow1Subquery', 1],
+        ['P2Disallow13SubquerySlice', 3],
     ])
     def test_disallow(self, model, disallow):
         self.disallow(model, disallow)

@@ -1,0 +1,7 @@
+include setup.py
+include README.md
+include LICENSE
+recursive-include django_constraint_triggers *.py
+exclude django_constraint_triggers/tests.py
+exclude django_constraint_triggers/models.py
+exclude django_constraint_triggers/migrations/0*
