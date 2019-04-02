@@ -10,7 +10,8 @@ from django.db.models import (
     F,
     Count,
     Exists,
-    OuterRef
+    OuterRef,
+    Subquery
 )
 from django.db.models.expressions import (
     RawSQL,
@@ -222,7 +223,7 @@ class Disallow13GT(AgeModel):
 class Disallow13Count(AgeModel):
     class Meta:
         constraint_triggers = [{
-            # Allow only 1 object in table
+            # Allow only 1 object in table (by using offset 1)
             'name': 'Count13',
             'query': DM('Disallow13Count').objects.all()[1:]
         }]
@@ -241,32 +242,18 @@ class Disallow12Range(AgeModel):
             'query': DM('Disallow12Range').objects.filter(age__range=(1,2))
         }]
 
-class Disallow1Local(AgeModel):
-    class Meta:
-        constraint_triggers = [{
-            'name': 'Reject solely based upon new row (local rejection).',
-            'query': DM('Disallow1Local').objects.annotate(
-                new_age=RawSQL('NEW.age', ())
-            ).filter(new_age=1)
-        }]
-
-#class Disallow13Smaller(AgeModel):
-#    class Meta:
-#        constraint_triggers = [{
-#            'name': 'Reject if a smaller entry exists.',
-#            'query': M().objects.annotate(
-#                new_pk=RawSQL('NEW.id', ())
-#            ).annotate(
-#                new_age=RawSQL('NEW.age', ())
-#            ).exclude(
-#                pk=F('new_pk')
-#            ).filter(
-#                age__gt=F('new_age')
-#            )
-#        }]
-
 # These need django 2+ for serialization of queryset expressions.
 if django.VERSION[0] >= 2:
+
+    class Disallow1Local(AgeModel):
+        class Meta:
+            constraint_triggers = [{
+                'name': 'Reject solely based upon new row (local rejection).',
+                'query': DM('Disallow1Local').objects.annotate(
+                    new_age=RawSQL('NEW.age', ())
+                ).filter(new_age=1)
+            }]
+
     class Disallow1Q(AgeModel):
         class Meta:
             constraint_triggers = [{
@@ -304,5 +291,18 @@ if django.VERSION[0] >= 2:
                     )
                 ).filter(
                     collision=True
+                )
+            }]
+
+    class Disallow13SubquerySlice(AgeModel):
+        class Meta:
+            constraint_triggers = [{
+                'name': 'Slice subquery disallow 13',
+                'query': DM('Disallow13SubquerySlice').objects.annotate(
+                    max_age=Subquery(
+                        DM('Disallow13SubquerySlice').objects.all().values('age').order_by('-age')[:1]
+                    )
+                ).filter(
+                    max_age__gte=1
                 )
             }]
