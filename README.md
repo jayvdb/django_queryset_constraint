@@ -23,9 +23,8 @@ Database Constraint Triggers will effectively protect against all scenarios.
 Installation
 ============
 ```
-pip install django_constraint_triggers
+pip install --index-url https://test.pypi.org/simple/ django_constraint_triggers
 ```
-(Eventually)
 
 Usage
 =====
