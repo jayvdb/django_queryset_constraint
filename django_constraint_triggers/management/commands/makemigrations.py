@@ -51,14 +51,6 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
             constraints = model_state.options.get(option_name, [])
             
             for trigger in constraints:
-                if trigger['query'].app_label is None:
-                    trigger['query'].app_label = app_label
-                if trigger['query'].model is None:
-                    trigger['query'].model = model_state.name
-
-                # from django_constraint_triggers.models import M
-                # print(M.deep_deconstruct(trigger['query'].operations))
-
                 self.add_operation(
                     app_label,
                     AddConstraintTrigger(
@@ -83,12 +75,6 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
             # TODO: All nulls in comparison
             add_constraints = [c for c in new_constraints if c not in old_constraints]
             rem_constraints = [c for c in old_constraints if c not in new_constraints]
-
-            for trigger in add_constraints + rem_constraints:
-                if trigger['query'].app_label is None:
-                    trigger['query'].app_label = app_label
-                if trigger['query'].model is None:
-                    trigger['query'].model = new_model_state.name
 
             self.altered_constraint_triggers.update({
                 (app_label, model_name): {

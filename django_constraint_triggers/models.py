@@ -31,7 +31,7 @@ class M(object):
     the Queryset at a later time.
     """
 
-    def __init__(self, model=None, app_label=None, operations=None, finalized=False):
+    def __init__(self, model, app_label, operations=None, finalized=False):
         """Construct an M object.
 
         Args:
@@ -168,6 +168,8 @@ class M(object):
             'finalized': True,
         }
 
+DM = partial(M, app_label='django_constraint_triggers')
+
 
 # TODO: Move these models into test
 class AgeModel(models.Model):
@@ -183,38 +185,38 @@ class Disallow1(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': '1',
-            'query': M().objects.filter(age=1)
+            'query': DM('Disallow1').objects.filter(age=1)
         }]
 
 class Disallow12In(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': 'IN12',
-            'query': M().objects.filter(age__in=[1,2])
+            'query': DM('Disallow12In').objects.filter(age__in=[1,2])
         }]
 
 class Disallow12Double(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': 'GTE1LTE2',
-            'query': M().objects.filter(age__gte=1).filter(age__lte=2)
+            'query': DM('Disallow12Double').objects.filter(age__gte=1).filter(age__lte=2)
         }]
 
 class Disallow12Multi(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': '1',
-            'query': M().objects.filter(age=1)
+            'query': DM('Disallow12Multi').objects.filter(age=1)
         }, {
             'name': '2',
-            'query': M().objects.filter(age=2)
+            'query': DM('Disallow12Multi').objects.filter(age=2)
         }]
 
 class Disallow13GT(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': 'GTE1',
-            'query': M().objects.filter(age__gte=1)
+            'query': DM('Disallow13GT').objects.filter(age__gte=1)
         }]
 
 class Disallow13Count(AgeModel):
@@ -222,28 +224,28 @@ class Disallow13Count(AgeModel):
         constraint_triggers = [{
             # Allow only 1 object in table
             'name': 'Count13',
-            'query': M().objects.all()[1:]
+            'query': DM('Disallow13Count').objects.all()[1:]
         }]
 
 class AllowOnly0(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': 'Only1',
-            'query': M().objects.exclude(age=0)
+            'query': DM('AllowOnly0').objects.exclude(age=0)
         }]
 
 class Disallow12Range(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': 'Range12',
-            'query': M().objects.filter(age__range=(1,2))
+            'query': DM('Disallow12Range').objects.filter(age__range=(1,2))
         }]
 
 class Disallow1Local(AgeModel):
     class Meta:
         constraint_triggers = [{
             'name': 'Reject solely based upon new row (local rejection).',
-            'query': M().objects.annotate(
+            'query': DM('Disallow1Local').objects.annotate(
                 new_age=RawSQL('NEW.age', ())
             ).filter(new_age=1)
         }]
@@ -269,21 +271,21 @@ if django.VERSION[0] >= 2:
         class Meta:
             constraint_triggers = [{
                 'name': 'Q1',
-                'query': M().objects.filter(Q(age=1))
+                'query': DM('Disallow1Q').objects.filter(Q(age=1))
             }]
 
     class Disallow12Q(AgeModel):
         class Meta:
             constraint_triggers = [{
                 'name': 'Q12',
-                'query': M().objects.filter(Q(age=1) | Q(age=2))
+                'query': DM('Disallow12Q').objects.filter(Q(age=1) | Q(age=2))
             }]
 
     class Disallow1Annotate(AgeModel):
         class Meta:
             constraint_triggers = [{
                 'name': 'Annotate1',
-                'query': M().objects.annotate(
+                'query': DM('Disallow1Annotate').objects.annotate(
                     disallowed=Value(1, output_field=models.IntegerField())
                 ).filter(
                     age=F('disallowed')
@@ -294,10 +296,9 @@ if django.VERSION[0] >= 2:
         class Meta:
             constraint_triggers = [{
                 'name': 'All objects must have the same age',
-                'query': M().objects.annotate(
+                'query': DM('Disallow1Subquery').objects.annotate(
                     collision=Exists(
-                        # TODO: Automatic pass these, somehow
-                        M('Disallow1Subquery', 'django_constraint_triggers').objects.filter(
+                        DM('Disallow1Subquery').objects.filter(
                             age=1
                         )
                     )
