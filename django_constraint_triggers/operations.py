@@ -13,7 +13,7 @@ def generate_names(trigger_name, table):
     return function_name, trigger_name
 
 
-def install_trigger(schema_editor, trig_name, trig_type, query, model, error=None):
+def install_trigger(schema_editor, trig_name, defer, query, model, error=None):
     table = model._meta.db_table
     function_name, trigger_name = generate_names(trig_name, table)
 
@@ -48,14 +48,15 @@ def install_trigger(schema_editor, trig_name, trig_type, query, model, error=Non
     schema_editor.execute(function)
     # Install trigger
     trigger = """
-        CREATE TRIGGER {}
+        CREATE CONSTRAINT TRIGGER {}
         AFTER INSERT OR UPDATE ON {}
-        FOR EACH {}
+        {}
+        FOR EACH ROW
             EXECUTE PROCEDURE {};
     """.format(
         trigger_name,
         table,
-        trig_type,
+        'DEFERRABLE' if defer else '',
         function_name,
     )
     schema_editor.execute(trigger)
@@ -84,7 +85,7 @@ class AddConstraintTrigger(IndexOperation):
         self.query = query
         # TODO: Statement as default?
         # self.trigger_type = trigger_type or "ROW"
-        self.trigger_type = "ROW"
+        self.defer = True
 
     def state_forwards(self, app_label, state):
         model_state = state.models[app_label, self.model_name_lower]
@@ -102,7 +103,7 @@ class AddConstraintTrigger(IndexOperation):
         model = to_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, model):
             install_trigger(schema_editor, self.trigger_name,
-                            self.trigger_type, self.query, model)
+                            self.defer, self.query, model)
 
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.model_name)
