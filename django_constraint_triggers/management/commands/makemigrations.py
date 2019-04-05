@@ -51,12 +51,15 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
             constraints = model_state.options.get(option_name, [])
             
             for trigger in constraints:
+                if 'error' not in trigger:
+                    trigger['error'] = None
                 self.add_operation(
                     app_label,
                     AddConstraintTrigger(
                         model_name=model_name,
                         trigger_name=trigger['name'],
                         query=trigger['query'],
+                        error=trigger['error'],
                     )
                 )
 
@@ -86,24 +89,30 @@ class MigrationAutodetector(autodetector.MigrationAutodetector):
     def generate_added_constraint_triggers(self):
         for (app_label, model_name), alt_constraints in self.altered_constraint_triggers.items():
             for trigger in alt_constraints['added_constraint_triggers']:
+                if 'error' not in trigger:
+                    trigger['error'] = None
                 self.add_operation(
                     app_label,
                     AddConstraintTrigger(
                         model_name=model_name,
                         trigger_name=trigger['name'],
                         query=trigger['query'],
+                        error=trigger['error'],
                     )
                 )
 
     def generate_removed_constraint_triggers(self):
         for (app_label, model_name), alt_constraints in self.altered_constraint_triggers.items():
             for trigger in alt_constraints['removed_constraint_triggers']:
+                if 'error' not in trigger:
+                    trigger['error'] = None
                 self.add_operation(
                     app_label,
                     RemoveConstraintTrigger(
                         model_name=model_name,
                         trigger_name=trigger['name'],
                         query=trigger['query'],
+                        error=trigger['error'],
                     )
                 )
 

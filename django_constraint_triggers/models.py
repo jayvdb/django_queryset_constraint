@@ -31,6 +31,14 @@ class AllowAll(AgeModel):
     pass
 
 # TODO: Changing M to classname results in broken migration
+class Disallow1CustomError(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': '1',
+            'query': DM('Disallow1CustomError').objects.filter(age=1),
+            'error': 'Hello, I am an error message',
+        }]
+
 class Disallow1(AgeModel):
     class Meta:
         constraint_triggers = [{

@@ -79,14 +79,15 @@ class AddConstraintTrigger(IndexOperation):
     option_name = 'constraint_triggers'
 
     # TODO: Support both ROW and statement triggers
-    def __init__(self, model_name, trigger_name, query): #, trigger_type=None):
+    # TODO: Support deferred and non-deferred
+    def __init__(self, model_name, trigger_name, query, error=None): #, trigger_type=None):
         self.model_name = model_name
         self.trigger_name = trigger_name
         self.query = query
+        self.error = error
         # TODO: Statement as default?
         # self.trigger_type = trigger_type or "ROW"
         self.defer = True
-        self.error = None
 
     def state_forwards(self, app_label, state):
         model_state = state.models[app_label, self.model_name_lower]
@@ -116,6 +117,7 @@ class AddConstraintTrigger(IndexOperation):
             'model_name': self.model_name,
             'trigger_name': self.trigger_name,
             'query': self.query,
+            'error': self.error,
         }
 
     def describe(self):
