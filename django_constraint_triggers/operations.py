@@ -56,7 +56,7 @@ def install_trigger(schema_editor, trig_name, defer, query, model, error=None):
     """.format(
         trigger_name,
         table,
-        'DEFERRABLE' if defer else '',
+        'DEFERRABLE INITIALLY DEFERRED' if defer else '',
         function_name,
     )
     schema_editor.execute(trigger)
