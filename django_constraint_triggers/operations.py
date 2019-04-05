@@ -35,7 +35,7 @@ def install_trigger(schema_editor, trig_name, defer, query, model, error=None):
             IF EXISTS (
                 {}
             ) THEN
-                RAISE EXCEPTION '{}';
+                RAISE check_violation USING MESSAGE = '{}';
             END IF;
             RETURN NULL;
         END
@@ -86,6 +86,7 @@ class AddConstraintTrigger(IndexOperation):
         # TODO: Statement as default?
         # self.trigger_type = trigger_type or "ROW"
         self.defer = True
+        self.error = None
 
     def state_forwards(self, app_label, state):
         model_state = state.models[app_label, self.model_name_lower]
@@ -103,7 +104,7 @@ class AddConstraintTrigger(IndexOperation):
         model = to_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, model):
             install_trigger(schema_editor, self.trigger_name,
-                            self.defer, self.query, model)
+                            self.defer, self.query, model, self.error)
 
     def database_backwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.model_name)

@@ -7,7 +7,7 @@ from django.test import (
     TransactionTestCase,
 )
 from django.db import models
-from django.db import InternalError
+from django.db.utils import IntegrityError
 from django.db import transaction
 
 from parameterized import parameterized, parameterized_class
@@ -52,7 +52,7 @@ class TestAge(TransactionTestCase):
         sequence = [0] + ([1] * disallow) + ([0] * (sequence_len - disallow))
         for idx, val in enumerate(sequence):
             if val:
-                with self.assertRaises(InternalError, msg=str(idx)):
+                with self.assertRaises(IntegrityError, msg=str(idx)):
                     self.save_method(model, idx)
             else:
                 self.save_method(model, idx)
