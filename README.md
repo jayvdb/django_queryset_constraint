@@ -83,12 +83,12 @@ potentially be ratified using partials inside the `M` object.
 
 Caveats
 =======
-This library relies on monkey patching several Django builtins;
+This library relies on monkey patching several Django builtins:
 
 - `django.db.models.options`
 - `django.db.migrations.state`
 
-To support the new Meta class option; `constraint_triggers`.
+To support the new Meta class option: `constraint_triggers`.
 
 - `django.core.management.commands.makemigrations.MigrationAutodetector`
 
