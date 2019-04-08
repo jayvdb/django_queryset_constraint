@@ -60,6 +60,25 @@ class M(object):
             node = M.deep_deconstruct(node)
         return node
 
+    def recursive_unpartial(self, p):
+        # Unfold args
+        unfolded_args = []
+        for arg in p.args:
+            if isinstance(arg, partial):
+                unfolded_args.append(self.recursive_unpartial(arg))
+            else:
+                unfolded_args.append(arg)
+        # Unfold kwargs
+        unfolded_kwargs = {}
+        for key in p.keywords:
+            value = p.keywords[key]
+            if isinstance(value, partial):
+                unfolded_kwargs[key] = self.recursive_unpartial(value)
+            else:
+                unfolded_kwargs[key] = value
+        # Call function with unfolded arguments
+        return p.func(*unfolded_args, **unfolded_kwargs)
+
     def replay(self):
         # Run through all operations to generate our queryset
         # TODO: Apply rules recursively to subqueries
@@ -71,7 +90,7 @@ class M(object):
             if operation['type'] == '__getitem__':
                 arg = operation['key']
                 if isinstance(arg, partial):
-                    arg = arg()
+                    arg = self.recursive_unpartial(arg)
                 result = result.__getitem__(arg)
             elif operation['type'] == '__getattribute__':
                 result = getattr(result, *operation['args'], **operation['kwargs'])
@@ -79,10 +98,10 @@ class M(object):
                 operation['args'] = list(operation['args'])
                 for idx, arg in enumerate(operation['args']):
                     if isinstance(arg, partial):
-                        operation['args'][idx] = arg()
+                        operation['args'][idx] = self.recursive_unpartial(arg)
                 for arg in operation['kwargs']:
                     if isinstance(operation['kwargs'][arg], partial):
-                        operation['kwargs'][arg] = operation['kwargs'][arg]()
+                        operation['kwargs'][arg] = self.recursive_unpartial(operation['kwargs'][arg])
                 result = result(*operation['args'], **operation['kwargs'])
             else:
                 raise Exception("Unknown operation!")

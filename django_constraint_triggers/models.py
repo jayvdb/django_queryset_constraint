@@ -10,7 +10,9 @@ from django.db.models import (
     Count,
     Exists,
     OuterRef,
-    Subquery
+    Subquery,
+    Case,
+    When
 )
 from django.db.models.expressions import (
     RawSQL,
@@ -163,6 +165,23 @@ if django.VERSION[0] >= 2:
                 )
             }]
 
+    class P2Disallow13When(AgeModel):
+        class Meta:
+            constraint_triggers = [{
+                'name': 'Disallow with When.',
+                'query': DM('P2Disallow13When').objects.annotate(
+                    block=Case(
+                        When(age=1, then=F('age')),
+                        When(age__gt=1, then=Value(1)),
+                        default=Value(0),
+                        output_field=models.IntegerField(),
+                    )
+                ).filter(
+                    block=1
+                )
+            }]
+
+
 class P2Disallow1Local(AgeModel):
     class Meta:
         constraint_triggers = [{
@@ -222,5 +241,37 @@ class P2Disallow13SubquerySlice(AgeModel):
                 )
             ).filter(
                 max_age__gte=1
+            )
+        }]
+
+class P2Disallow13When(AgeModel):
+    class Meta:
+        constraint_triggers = [{
+            'name': 'Disallow with When.',
+            'query': DM('P2Disallow13When').objects.annotate(
+                block=partial(
+                    Case,
+                    # pylint: disable=line-too-long
+                    partial(
+                        When,
+                        age=1,
+                        then=partial(
+                            F,
+                            'age'
+                        )
+                    ),
+                    partial(
+                        When,
+                        age__gt=1,
+                        then=partial(
+                            Value,
+                            1
+                        )
+                    ),
+                    default=partial(Value, 0),
+                    output_field=models.IntegerField(),
+                )
+            ).filter(
+                block=1
             )
         }]

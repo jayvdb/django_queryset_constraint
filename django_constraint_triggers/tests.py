@@ -74,6 +74,7 @@ class TestAge(TransactionTestCase):
         ['P2Disallow1Annotate', 1],
         ['P2Disallow1Subquery', 1],
         ['P2Disallow13SubquerySlice', 3],
+        ['P2Disallow13When', 3],
     ])
     def test_disallow(self, model, disallow):
         self.disallow(model, disallow)
@@ -85,6 +86,7 @@ class TestAge(TransactionTestCase):
         ['Disallow1Annotate', 1],
         ['Disallow1Subquery', 1],
         ['Disallow13SubquerySlice', 3],
+        ['Disallow13When', 3],
     ])
     @skipIf(django.VERSION[0] == 1, "Model utilized serialized Q objects")
     def test_disallow_django2(self, model, disallow):
