@@ -102,6 +102,7 @@ class AddConstraintTrigger(IndexOperation):
         state.reload_model(app_label, self.model_name_lower, delay=True)
 
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
+        # TODO: XXX: Check queryset is empty before inserting trigger
         model = to_state.apps.get_model(app_label, self.model_name)
         if self.allow_migrate_model(schema_editor.connection.alias, model):
             install_trigger(schema_editor, self.trigger_name,
