@@ -165,11 +165,11 @@ if django.VERSION[0] >= 2:
                 )
             }]
 
-    class P2Disallow13When(AgeModel):
+    class Disallow13When(AgeModel):
         class Meta:
             constraint_triggers = [{
                 'name': 'Disallow with When.',
-                'query': DM('P2Disallow13When').objects.annotate(
+                'query': DM('Disallow13When').objects.annotate(
                     block=Case(
                         When(age=1, then=F('age')),
                         When(age__gt=1, then=Value(1)),

@@ -24,7 +24,10 @@ def install_trigger(schema_editor, trig_name, defer, query, model, error=None):
     # Run through all operations to generate our queryset
     result = query.replay()
     # Generate query from queryset
-    query = str(result.query)
+    from django.db import connection
+    cursor = connection.cursor()
+    sql, sql_params = result.query.get_compiler(using=result.db).as_sql()
+    query = cursor.mogrify(sql, sql_params)
 
     # Install function
     function = """
@@ -42,7 +45,7 @@ def install_trigger(schema_editor, trig_name, defer, query, model, error=None):
         $$ LANGUAGE plpgsql;
     """.format(
         function_name,
-        query,
+        query.decode(),
         error,
     )
     schema_editor.execute(function)
