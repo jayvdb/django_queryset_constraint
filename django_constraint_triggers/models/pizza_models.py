@@ -53,7 +53,7 @@ class Topping(models.Model):
         constraints = [
             models.CheckConstraint(
                 name='Anchovies are not a valid topping for anything.',
-                check=~Q(name='anchovies'),
+                check=~Q(name='Anchovies'),
             ),
         ]
     name = models.CharField(max_length=30)
