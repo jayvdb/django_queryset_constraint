@@ -6,7 +6,7 @@ from setuptools import (
 )
 
 CURRENT_PYTHON = sys.version_info[:2]
-REQUIRED_PYTHON = (2, 7)
+REQUIRED_PYTHON = (3, 5)
 
 # This check and everything above must remain compatible with Python 2.7.
 if CURRENT_PYTHON < REQUIRED_PYTHON:
@@ -15,15 +15,15 @@ if CURRENT_PYTHON < REQUIRED_PYTHON:
 Unsupported Python version
 ==========================
 
-This version of django-queryset-signals requires Python {}.{}, but you are
+This version of django_queryset_triggers requires Python {}.{}, but you are
 trying to install it on Python {}.{}.
 
 This may be because you are using a version of pip that doesn't
 understand the python_requires classifier. Make sure you
 have pip >= 9.0 and setuptools >= 24.2, then try again:
     $ python -m pip install --upgrade pip setuptools
-    $ python -m pip install django-queryset-signals
-This will install the latest version of django-queryset-signals which works on
+    $ python -m pip install django_queryset_triggers
+This will install the latest version of django_queryset_triggers which works on
 your version of Python.""".format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
     sys.exit(1)
 
@@ -33,7 +33,7 @@ def read(fname):
 
 setup(
     name='django_constraint_triggers',
-    version='0.1.13',
+    version='0.1.15',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     url='https://github.com/magenta-aps/django_constraint_triggers',
     author='Emil Madsen',
@@ -68,7 +68,7 @@ setup(
         'django',
     ],
     project_urls={
-        'Source': 'https://github.com/magenta-aps/django-queryset-signals',
+        'Source': 'https://github.com/magenta-aps/django_queryset_triggers',
         # TODO: Add documentation URL
     },
 )
