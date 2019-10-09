@@ -23,7 +23,7 @@ Database Constraint Triggers will effectively protect against all scenarios.
 Installation
 ============
 ```
-pip install --index-url https://test.pypi.org/simple/ django_queryset_constraint
+pip install django_queryset_constraint
 ```
 
 Usage
@@ -45,6 +45,11 @@ INSTALLED_APPS = {
 
 ```
 # models.py
+from django.db import models
+from django.db.models import Count
+from django_queryset_constraint import M, QuerysetConstraint
+
+
 class Topping(models.Model):
     name = models.CharField(max_length=30)
 
