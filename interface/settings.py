@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
-    'django_constraint_triggers',
+    'django_queryset_constraint',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

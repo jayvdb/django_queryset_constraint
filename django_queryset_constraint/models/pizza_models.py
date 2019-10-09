@@ -5,8 +5,8 @@ from django.db.models import (
     Count,
 )
 
-from django_constraint_triggers.utils import M
-from django_constraint_triggers.constraints import QuerysetConstraint
+from django_queryset_constraint.utils import M
+from django_queryset_constraint.constraints import QuerysetConstraint
 
 
 # No constraint pizzas

@@ -31,5 +31,5 @@ tmp/**
 **/#*#
 .#*
 **/*~
-django_constraint_triggers/migrations/
+django_queryset_constraint/migrations/
 venv3/

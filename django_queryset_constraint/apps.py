@@ -5,4 +5,4 @@ from django.apps import AppConfig
 
 
 class DjangoConstraintTriggersConfig(AppConfig):
-    name = 'django_constraint_triggers'
+    name = 'django_queryset_constraint'

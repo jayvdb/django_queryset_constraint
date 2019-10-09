@@ -1,2 +1,0 @@
-from django_constraint_triggers.utils import M
-from django_constraint_triggers.constraints import QuerysetConstraint

@@ -11,7 +11,7 @@ from django.db.utils import IntegrityError
 from django.db import transaction
 
 from parameterized import parameterized, parameterized_class
-import django_constraint_triggers
+import django_queryset_constraint
 
 
 def create(self, model, value):
@@ -51,7 +51,7 @@ class TestAge(TransactionTestCase):
 
     def disallow(self, model_name, disallow, duplicates):
         # Load the test model in
-        model = apps.get_model('django_constraint_triggers', model_name)
+        model = apps.get_model('django_queryset_constraint', model_name)
         # Create all our entries using the parameterized save_method
         for val in range(self.num_entries):
             # Create x duplicates to validate against one-off errors

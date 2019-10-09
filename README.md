@@ -1,7 +1,7 @@
-Django Constraint Triggers
+Django Queryset Constraint
 ==========================
 
-[![Build Status](https://travis-ci.org/magenta-aps/django_constraint_triggers.svg?branch=master)](https://travis-ci.org/magenta-aps/django_constraint_triggers)
+[![Build Status](https://travis-ci.org/magenta-aps/django_queryset_constraint.svg?branch=master)](https://travis-ci.org/magenta-aps/django_queryset_constraint)
 
 This library enables one to write reliable data invariants, by compiling Django
 Querysets to database insert/update triggers, via. the migration system.
@@ -23,18 +23,18 @@ Database Constraint Triggers will effectively protect against all scenarios.
 Installation
 ============
 ```
-pip install --index-url https://test.pypi.org/simple/ django_constraint_triggers
+pip install --index-url https://test.pypi.org/simple/ django_queryset_constraint
 ```
 
 Usage
 =====
 
-- Add the `django_constraint_triggers` app to `INSTALLED_APPS`:
+- Add the `django_queryset_constraint` app to `INSTALLED_APPS`:
 
 ```
 # settings.py
 INSTALLED_APPS = {
-    'django_constraint_triggers',
+    'django_queryset_constraint',
     ...
 }
 ```

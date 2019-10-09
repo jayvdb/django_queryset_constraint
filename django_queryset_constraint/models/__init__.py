@@ -1,4 +1,4 @@
-from django_constraint_triggers.models.age_models import (
+from django_queryset_constraint.models.age_models import (
     AgeModel,
     AllowAll,
     Disallow1CC,
@@ -25,7 +25,7 @@ from django_constraint_triggers.models.age_models import (
     Disallow13SubquerySliceQC,
     Disallow13WhenQC,
 )
-from django_constraint_triggers.models.pizza_models import (
+from django_queryset_constraint.models.pizza_models import (
     # Constraint models
     Pizza,
     PizzaTopping,

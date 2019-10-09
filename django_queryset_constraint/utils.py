@@ -199,7 +199,7 @@ class M(object):
             return self
 
     def deconstruct(self):
-        return 'django_constraint_triggers.utils.' + self.__class__.__name__, [], {
+        return 'django_queryset_constraint.utils.' + self.__class__.__name__, [], {
             'model_name': self.model_name,
             'app_label': self.app_label,
             'operations': self.operations,

@@ -82,7 +82,7 @@ class QuerysetConstraint(BaseConstraint):
         )
 
     def constraint_sql(self, model, schema_editor):
-        raise NotImplementedError("If this happens, contact me!")
+        return ""
 
     def create_sql(self, model, schema_editor):
         return self._install_trigger(

@@ -1,8 +1,8 @@
 include setup.py
 include README.md
 include LICENSE
-recursive-include django_constraint_triggers *.py
-exclude django_constraint_triggers/tests/*
-exclude django_constraint_triggers/models/*
-exclude django_constraint_triggers/migrations/0*
-exclude django_constraint_triggers/__pycache__/*
+recursive-include django_queryset_constraint *.py
+exclude django_queryset_constraint/tests/*
+exclude django_queryset_constraint/models/*
+exclude django_queryset_constraint/migrations/0*
+exclude django_queryset_constraint/__pycache__/*

@@ -32,10 +32,10 @@ def read(fname):
         return f.read()
 
 setup(
-    name='django_constraint_triggers',
+    name='django_queryset_constraint',
     version='0.1.19',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
-    url='https://github.com/magenta-aps/django_constraint_triggers',
+    url='https://github.com/magenta-aps/django_queryset_constraint',
     author='Emil Madsen',
     author_email='emil@magenta.dk',
     description=('A library for writing reliable data invariants in Django.'),
@@ -44,7 +44,7 @@ setup(
     license='MPL-2.0',
     packages=find_packages(),
     include_package_data=True,
-    download_url='https://github.com/magenta-aps/django_constraint_triggers/archive/master.zip',
+    download_url='https://github.com/magenta-aps/django_queryset_constraint/archive/master.zip',
     zip_safe=False,
     install_requires=['Django'],
     classifiers=[

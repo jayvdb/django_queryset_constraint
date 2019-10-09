@@ -9,9 +9,9 @@ from django.db.utils import IntegrityError
 from django.db import transaction
 
 from parameterized import parameterized, parameterized_class
-import django_constraint_triggers
+import django_queryset_constraint
 
-from django_constraint_triggers.models.pizza_models import (
+from django_queryset_constraint.models.pizza_models import (
     Pizza,
     PizzaTopping,
     Topping,
@@ -56,6 +56,7 @@ class TestPizza(TransactionTestCase):
         self.pineapple = self.topping.objects.create(name="Pineapple")
 
     def test_anchovies_are_not_a_valid_topping(self):
+        # Creating anchovies as topping
         self.assertRaisesIf(
             IntegrityError,
             lambda self: self.topping.objects.create(name="Anchovies")
@@ -64,7 +65,7 @@ class TestPizza(TransactionTestCase):
     def test_cannot_have_multiple_of_the_same_topping(self):
         django_double = self.pizza.objects.create(name="Django Double")
         self.pizza_topping.objects.create(pizza=django_double, topping=self.cheese)
-        # Adding a 6th topping
+        # Adding the same topping twice
         self.assertRaisesIf(
             IntegrityError,
             lambda self: self.pizza_topping.objects.create(pizza=django_double, topping=self.cheese)
@@ -85,7 +86,7 @@ class TestPizza(TransactionTestCase):
 
     def test_no_pineapple_on_pizza(self):
         django_invalid = self.pizza.objects.create(name="Django Invalid")
-        # Adding a 6th topping
+        # Adding pineapple
         self.assertRaisesIf(
             IntegrityError,
             lambda self: self.pizza_topping.objects.create(pizza=django_invalid, topping=self.pineapple)
