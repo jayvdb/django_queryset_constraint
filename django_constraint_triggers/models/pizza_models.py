@@ -20,10 +20,6 @@ from django_constraint_triggers.utils import M
 from django_constraint_triggers.constraints import QuerysetConstraint
 
 
-DM = partial(M, app_label='django_constraint_triggers')
-
-
-
 # No constraint pizzas
 class ToppingNC(models.Model):
     name = models.CharField(max_length=30)
@@ -69,7 +65,7 @@ class PizzaTopping(models.Model):
             # A pizza with more than 5 toppings gets soggy
             QuerysetConstraint(
                 name='At most 5 toppings',
-                queryset=DM('PizzaTopping').objects.values(
+                queryset=M().objects.values(
                     'pizza'
                 ).annotate(
                     num_toppings=Count('topping')
@@ -80,7 +76,7 @@ class PizzaTopping(models.Model):
             # This constraint should be self-explanatory for civilized people
             QuerysetConstraint(
                 name='No pineapple',
-                queryset=DM('PizzaTopping').objects.filter(
+                queryset=M().objects.filter(
                     topping__name="Pineapple"
                 )
             ),

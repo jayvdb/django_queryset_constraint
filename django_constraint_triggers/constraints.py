@@ -19,6 +19,9 @@ class QuerysetConstraint(BaseConstraint):
 
     def _install_trigger(self, schema_editor, model, defer=True, error=None):
         table = model._meta.db_table
+        app_label = model._meta.app_label
+        model_name = model._meta.object_name
+
         function_name, trigger_name = self._generate_names(table)
 
         # No error message - Default to 'Invariant broken'
@@ -26,6 +29,8 @@ class QuerysetConstraint(BaseConstraint):
             error = 'Invariant broken'
 
         # Run through all operations to generate our queryset
+        self.queryset.app_label = self.queryset.app_label or app_label
+        self.queryset.model_name = self.queryset.model_name or model_name
         result = self.queryset.replay()
         # Generate query from queryset
         cursor = connection.cursor()

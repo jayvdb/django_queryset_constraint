@@ -54,7 +54,7 @@ class Disallow1QC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age=1',
-                queryset=DM('Disallow1QC').objects.filter(age=1),
+                queryset=M().objects.filter(age=1),
             )
         ]
 
@@ -63,7 +63,7 @@ class Disallow1ViaQQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age=1 via Q',
-                queryset=DM('Disallow1ViaQQC').objects.filter(Q(age=1)),
+                queryset=M().objects.filter(Q(age=1)),
             )
         ]
 
@@ -74,7 +74,7 @@ class Disallow1TriggerNewQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age=1 via trigger NEW',
-                queryset=DM('Disallow1TriggerNewQC').objects.annotate(
+                queryset=M().objects.annotate(
                     new_age=RawSQL('NEW.age', ())
                 ).filter(new_age=1)
             )
@@ -98,7 +98,7 @@ class Disallow12InQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age in list',
-                queryset=DM('Disallow12InQC').objects.filter(age__in=[1,2]),
+                queryset=M().objects.filter(age__in=[1,2]),
             )
         ]
 
@@ -108,7 +108,7 @@ class Disallow12ViaQQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age in or via Q',
-                queryset=DM('Disallow12ViaQQC').objects.filter(Q(age=1) | Q(age=2)),
+                queryset=M().objects.filter(Q(age=1) | Q(age=2)),
             )
         ]
 
@@ -129,7 +129,7 @@ class Disallow12OneFilterQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age ONE filter',
-                queryset=DM('Disallow12OneFilterQC').objects.filter(age__gte=1, age__lte=2)
+                queryset=M().objects.filter(age__gte=1, age__lte=2)
             )
         ]
 
@@ -150,7 +150,7 @@ class Disallow12AndFilterQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age AND filter',
-                queryset=DM('Disallow12AndFilterQC').objects.filter(age__gte=1).filter(age__lte=2)
+                queryset=M().objects.filter(age__gte=1).filter(age__lte=2)
             )
         ]
 
@@ -175,11 +175,11 @@ class Disallow12MultiFilterQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age Multi1 filter',
-                queryset=DM('Disallow12MultiFilterQC').objects.filter(age=1)
+                queryset=M().objects.filter(age=1)
             ),
             QuerysetConstraint(
                 name='QC: Disallow age Multi2 filter',
-                queryset=DM('Disallow12MultiFilterQC').objects.filter(age=2)
+                queryset=M().objects.filter(age=2)
             )
         ]
 
@@ -193,7 +193,7 @@ class Disallow12MultiFilterMixed(AgeModel):
             ),
             QuerysetConstraint(
                 name='QC: Disallow age MultiMixed filter',
-                queryset=DM('Disallow12MultiFilterQC').objects.filter(age=2)
+                queryset=M().objects.filter(age=2)
             )
         ]
 
@@ -213,7 +213,7 @@ class Disallow12RangeQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age range filter',
-                queryset=DM('Disallow12RangeQC').objects.filter(age__range=(1,2))
+                queryset=M().objects.filter(age__range=(1,2))
             )
         ]
 
@@ -233,7 +233,7 @@ class AllowOnly0QC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Allow only 0',
-                queryset=DM('AllowOnly0QC').objects.exclude(age=0)
+                queryset=M().objects.exclude(age=0)
             )
         ]
 
@@ -247,7 +247,7 @@ class AllowOnly1ObjectQC(AgeModel):
             # Allow only 1 object in table (by using offset 1)
             QuerysetConstraint(
                 name='QC: Allow only 1 object',
-                queryset=DM('AllowOnly1ObjectQC').objects.all()[1:]
+                queryset=M().objects.all()[1:]
             )
         ]
 
@@ -257,7 +257,7 @@ class Disallow1AnnotateQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age=1 via annotation',
-                queryset=DM('Disallow1AnnotateQC').objects.annotate(
+                queryset=M().objects.annotate(
                     disallowed=Value(1, output_field=models.IntegerField())
                 ).filter(
                     age=F('disallowed')
@@ -271,7 +271,7 @@ class Disallow1SubqueryQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age=1 via subquery',
-                queryset=DM('Disallow1SubqueryQC').objects.annotate(
+                queryset=M().objects.annotate(
                     collision=Exists(
                         DM('Disallow1SubqueryQC').objects.filter(
                             age=1
@@ -289,7 +289,7 @@ class Disallow13SubquerySliceQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age>0 via subquery slice',
-                queryset=DM('Disallow13SubquerySliceQC').objects.annotate(
+                queryset=M().objects.annotate(
                     max_age=Subquery(
                         DM('Disallow13SubquerySliceQC').objects.all().values('age').order_by('-age')[:1]
                     )
@@ -305,7 +305,7 @@ class Disallow13WhenQC(AgeModel):
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age>0 via When',
-                queryset=DM('Disallow13WhenQC').objects.annotate(
+                queryset=M().objects.annotate(
                     block=Case(
                         When(age=1, then=F('age')),
                         When(age__gt=1, then=Value(1)),

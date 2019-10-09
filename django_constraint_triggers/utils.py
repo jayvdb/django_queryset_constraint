@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from django.apps import apps
 from functools import partial
 
+
 class M(object):
     """A :code:`M()` object is a lazy object utilized in place of Queryset(s).
 
@@ -15,7 +16,7 @@ class M(object):
     the Queryset at a later time.
     """
 
-    def __init__(self, model, app_label, operations=None, finalized=False):
+    def __init__(self, model_name=None, app_label=None, operations=None, finalized=False):
         """Construct an M object.
 
         Args:
@@ -30,7 +31,7 @@ class M(object):
             operations (list of dict, optional):
                 Should not be supplied by the user.
         """
-        self.model = model
+        self.model_name = model_name
         self.app_label = app_label
         self.operations = operations
         self.finalized = finalized
@@ -40,7 +41,7 @@ class M(object):
     def __eq__(self, other):
         return (
             self.__class__ == other.__class__ and 
-            self.model == other.model and
+            self.model_name == other.model_name and
             self.app_label == other.app_label and
             self.__deep_compare(self.operations, other.operations)
         )
@@ -84,7 +85,7 @@ class M(object):
         # TODO: Apply rules recursively to subqueries
         # TODO: Support Q and F in Django 1.11 using partials
         # TODO: Use a subclass of partial to ensure we only fold out the intended
-        model = apps.get_model(self.app_label, self.model)
+        model = apps.get_model(self.app_label, self.model_name)
         result = model
         for operation in self.operations:
             if operation['type'] == '__getitem__':
@@ -173,7 +174,7 @@ class M(object):
 
     def deconstruct(self):
         return 'django_constraint_triggers.utils.' + self.__class__.__name__, [], {
-            'model': self.model,
+            'model_name': self.model_name,
             'app_label': self.app_label,
             'operations': self.operations,
             'finalized': True,
