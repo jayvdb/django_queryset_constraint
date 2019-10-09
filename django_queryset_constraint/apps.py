@@ -4,5 +4,5 @@ from __future__ import unicode_literals
 from django.apps import AppConfig
 
 
-class DjangoConstraintTriggersConfig(AppConfig):
+class DjangoQuerysetConstraintConfig(AppConfig):
     name = 'django_queryset_constraint'

@@ -9,7 +9,6 @@ from django.db.utils import IntegrityError
 from django.db import transaction
 
 from parameterized import parameterized, parameterized_class
-import django_queryset_constraint
 
 from django_queryset_constraint.models.pizza_models import (
     Pizza,
