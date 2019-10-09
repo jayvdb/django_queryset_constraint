@@ -50,6 +50,7 @@ setup(
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
+        'Framework :: Django :: 2.2',
         'Intended Audience :: Developers',
         'License :: OSI Approved',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
