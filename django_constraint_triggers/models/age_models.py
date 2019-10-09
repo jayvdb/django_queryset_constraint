@@ -20,10 +20,6 @@ from django_constraint_triggers.utils import M
 from django_constraint_triggers.constraints import QuerysetConstraint
 
 
-DM = partial(M, app_label='django_constraint_triggers')
-
-
-
 # TODO: Move these models into test
 class AgeModel(models.Model):
     """Abstract model used as base for all test models."""
@@ -273,7 +269,7 @@ class Disallow1SubqueryQC(AgeModel):
                 name='QC: Disallow age=1 via subquery',
                 queryset=M().objects.annotate(
                     collision=Exists(
-                        DM('Disallow1SubqueryQC').objects.filter(
+                        M().objects.filter(
                             age=1
                         )
                     )
@@ -291,7 +287,7 @@ class Disallow13SubquerySliceQC(AgeModel):
                 name='QC: Disallow age>0 via subquery slice',
                 queryset=M().objects.annotate(
                     max_age=Subquery(
-                        DM('Disallow13SubquerySliceQC').objects.all().values('age').order_by('-age')[:1]
+                        M().objects.all().values('age').order_by('-age')[:1]
                     )
                 ).filter(
                     max_age__gte=1
@@ -315,5 +311,62 @@ class Disallow13WhenQC(AgeModel):
                 ).filter(
                     block=1
                 )
+            )
+        ]
+
+
+def generate_subquery(layers):
+    """Generate a queryset with 'layers' subqueries."""
+    inner_queryset = M().objects.filter(
+        age=1
+    )
+    return_queryset = inner_queryset
+    for _ in range(layers):
+        return_queryset = M().objects.annotate(
+            collision=Exists(
+                return_queryset
+            )
+        ).filter(
+            collision=True
+        )
+    return return_queryset
+
+
+class Disallow1SubqueryWith1SubqueryQC(AgeModel):
+    class Meta:
+        constraints = [
+            QuerysetConstraint(
+                name='QC: Disallow age=1 via subquery with 1 subquery',
+                queryset=generate_subquery(1)
+            )
+        ]
+
+
+class Disallow1SubqueryWith2SubqueryQC(AgeModel):
+    class Meta:
+        constraints = [
+            QuerysetConstraint(
+                name='QC: Disallow age=1 via subquery with 2 subqueries',
+                queryset=generate_subquery(2)
+            )
+        ]
+
+
+class Disallow1SubqueryWith3SubqueryQC(AgeModel):
+    class Meta:
+        constraints = [
+            QuerysetConstraint(
+                name='QC: Disallow age=1 via subquery with 3 subqueries',
+                queryset=generate_subquery(3)
+            )
+        ]
+
+
+class Disallow1SubqueryWith7SubqueryQC(AgeModel):
+    class Meta:
+        constraints = [
+            QuerysetConstraint(
+                name='QC: Disallow age=1 via subquery with 7 subqueries',
+                queryset=generate_subquery(7)
             )
         ]

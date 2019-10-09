@@ -91,6 +91,10 @@ class TestAge(TransactionTestCase):
         ['Disallow1SubqueryQC', [1]],
         ['Disallow13SubquerySliceQC', [1,2,3]],
         ['Disallow13WhenQC', [1,2,3]],
+        ['Disallow1SubqueryWith1SubqueryQC', [1]],
+        ['Disallow1SubqueryWith2SubqueryQC', [1]],
+        ['Disallow1SubqueryWith3SubqueryQC', [1]],
+        ['Disallow1SubqueryWith7SubqueryQC', [1]],
     ])
     def test_disallow(self, model, disallow, duplicates=True):
         self.disallow(model, disallow, duplicates)

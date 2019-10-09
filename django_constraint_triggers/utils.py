@@ -2,6 +2,10 @@ from __future__ import unicode_literals
 from django.apps import apps
 from functools import partial
 
+# Thread local storage used for forwarding model/app to recursive M objects
+import threading
+tlocals = threading.local()
+
 
 class M(object):
     """A :code:`M()` object is a lazy object utilized in place of Queryset(s).
@@ -15,6 +19,7 @@ class M(object):
     to the M object, such that these operations can be replayed to reconstruct
     the Queryset at a later time.
     """
+    # TODO: Inherit from queryset + implement destruct() method?
 
     def __init__(self, model_name=None, app_label=None, operations=None, finalized=False):
         """Construct an M object.
@@ -80,11 +85,9 @@ class M(object):
         # Call function with unfolded arguments
         return p.func(*unfolded_args, **unfolded_kwargs)
 
-    def replay(self):
+    def _replay(self):
         # Run through all operations to generate our queryset
         # TODO: Apply rules recursively to subqueries
-        # TODO: Support Q and F in Django 1.11 using partials
-        # TODO: Use a subclass of partial to ensure we only fold out the intended
         model = apps.get_model(self.app_label, self.model_name)
         result = model
         for operation in self.operations:
@@ -106,6 +109,29 @@ class M(object):
                 result = result(*operation['args'], **operation['kwargs'])
             else:
                 raise Exception("Unknown operation!")
+        return result
+
+    def replay(self):
+        # Pull app_label and model from thread-local storage if empty
+        if not self.app_label:
+            self.app_label = tlocals.app_label
+        if not self.model_name:
+            self.model_name = tlocals.model_name
+        # Update thread-local storage to push it down the stack
+        tlocals.app_label = self.app_label
+        tlocals.model_name = self.model_name
+        # Reply to build queryset
+        result = self._replay()
+        # Clean up thread-local storage
+        try:
+            del tlocals.app_label
+        except AttributeError:
+            pass
+        try:
+            del tlocals.model_name
+        except AttributeError:
+            pass
+        # Return queryset
         return result
 
     def __deep_compare_func(self, left, right):
