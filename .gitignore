@@ -32,3 +32,4 @@ tmp/**
 .#*
 **/*~
 django_constraint_triggers/migrations/
+venv3/

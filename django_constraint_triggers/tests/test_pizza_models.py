@@ -61,6 +61,15 @@ class TestPizza(TransactionTestCase):
             lambda self: self.topping.objects.create(name="Anchovies")
         )
 
+    def test_cannot_have_multiple_of_the_same_topping(self):
+        django_double = self.pizza.objects.create(name="Django Double")
+        self.pizza_topping.objects.create(pizza=django_double, topping=self.cheese)
+        # Adding a 6th topping
+        self.assertRaisesIf(
+            IntegrityError,
+            lambda self: self.pizza_topping.objects.create(pizza=django_double, topping=self.cheese)
+        )
+
     def test_max_five_toppings_on_a_pizza(self):
         django_special = self.pizza.objects.create(name="Django Special")
         self.pizza_topping.objects.create(pizza=django_special, topping=self.cheese)
