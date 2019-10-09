@@ -40,6 +40,7 @@ setup(
     author_email='emil@magenta.dk',
     description=('A library for writing reliable data invariants in Django.'),
     long_description=read('README.md'),
+    long_description_content_type="text/markdown",
     license='MPL-2.0',
     packages=find_packages(),
     include_package_data=True,
