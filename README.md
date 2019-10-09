@@ -2,6 +2,12 @@ Django Queryset Constraint
 ==========================
 
 [![Build Status](https://travis-ci.com/magenta-aps/django_queryset_constraint.svg?branch=master)](https://travis-ci.com/magenta-aps/django_queryset_constraint)
+[![Release Status](https://img.shields.io/pypi/v/django_queryset_constraint)](https://pypi.org/project/django-queryset-constraint/)
+[![License](https://img.shields.io/pypi/l/django_queryset_constraint)](https://github.com/magenta-aps/django_queryset_constraint/blob/master/LICENSE)
+[![Python Versions](https://img.shields.io/pypi/pyversions/django_queryset_constraint)](https://www.python.org/downloads/)
+[![Django Versions](https://img.shields.io/pypi/djversions/django_queryset_constraint)](https://www.djangoproject.com/download/)
+
+
 
 This library enables one to write reliable data invariants, by compiling Django
 Querysets to database insert/update triggers, via. the migration system.
