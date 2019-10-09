@@ -41,26 +41,50 @@ INSTALLED_APPS = {
 
 *Note: This should be done **before** any apps that will be checked*
 
-- Add `constraint_triggers` to the Meta class of the models to checked:
+- Add `QuerysetConstraint` to `constraints` to the Meta class of the models to checked:
 
 ```
 # models.py
-class MyCheckedModel(models.Model):
-    ...
-    class Meta:
-        constraint_triggers = [{
-            'name': 'Age > 12',
-            'query': M('MyCheckedModel', app_label='test').objects.filter(
-                age__gt=12
-            )
-        }]
-    age = models.PositiveIntegerField()
-```
+class Topping(models.Model):
+    name = models.CharField(max_length=30)
 
-*Note: The above is clearly a toy example, and could be achieved using
-Django's [CheckConstraint](https://docs.djangoproject.com/en/dev/ref/models/constraints/#checkconstraint)
-(> 2.0) or even using a [MinValueValidator](https://docs.djangoproject.com/en/dev/ref/validators/#minvaluevalidator)
-on the [PositiveIntegerField](https://docs.djangoproject.com/en/dev/ref/models/fields/#positiveintegerfield) itself.*
+    def __str__(self):
+        return self.name
+
+class PizzaTopping(models.Model):
+    class Meta:
+        unique_together = ("pizza", "topping")
+        constraints = [
+            # A pizza with more than 5 toppings gets soggy
+            QuerysetConstraint(
+                name='At most 5 toppings',
+                queryset=M().objects.values(
+                    'pizza'
+                ).annotate(
+                    num_toppings=Count('topping')
+                ).filter(
+                    num_toppings__gt=5
+                ),
+            ),
+            # This constraint should be self-explanatory for civilized people
+            QuerysetConstraint(
+                name='No pineapple',
+                queryset=M().objects.filter(
+                    topping__name="Pineapple"
+                )
+            ),
+        ]
+
+    pizza = models.ForeignKey('Pizza', on_delete=models.CASCADE)
+    topping = models.ForeignKey(Topping, on_delete=models.CASCADE)
+
+class Pizza(models.Model):
+    name = models.CharField(max_length=30)
+    toppings = models.ManyToManyField(Topping, through=PizzaTopping)
+
+    def __str__(self):
+        return self.name
+```
 
 - Make migrations: `python manage.py makemigrations`
 - Run migrations: `python manage.py migrate`
@@ -73,28 +97,4 @@ This app supports the following combinations of Django and Python:
 
 | Django     | Python                  |
 | ---------- | ----------------------- |
-| 1.11 (`x`) | 2.7, 3.4, 3.5, 3.6, 3.7 |
-| 2.0        | 3.4, 3.5, 3.6, 3.7      |
-| 2.1        | 3.5, 3.6, 3.7           |
-
-`x`: Functionality is limited on 1.11, as this version does not support
-serialization of queryset expressions, such as `Q` and `F` objects. This can
-potentially be ratified using partials inside the `M` object.
-
-Caveats
-=======
-This library relies on monkey patching several Django builtins:
-
-- `django.db.models.options`
-- `django.db.migrations.state`
-
-To support the new Meta class option: `constraint_triggers`.
-
-- `django.core.management.commands.makemigrations.MigrationAutodetector`
-
-To replace the `MigrationAutodetector`, such that changes to the new Meta class
-field can automatically generate corresponding migration files.
-
-
-The library may thus conflict with other libraries that monkey patch the same
-classes / arrays.
+| 2.2        | 3.5, 3.6, 3.7           |
