@@ -15,15 +15,15 @@ if CURRENT_PYTHON < REQUIRED_PYTHON:
 Unsupported Python version
 ==========================
 
-This version of django_queryset_triggers requires Python {}.{}, but you are
+This version of django_queryset_constraint requires Python {}.{}, but you are
 trying to install it on Python {}.{}.
 
 This may be because you are using a version of pip that doesn't
 understand the python_requires classifier. Make sure you
 have pip >= 9.0 and setuptools >= 24.2, then try again:
     $ python -m pip install --upgrade pip setuptools
-    $ python -m pip install django_queryset_triggers
-This will install the latest version of django_queryset_triggers which works on
+    $ python -m pip install django_queryset_constraint
+This will install the latest version of django_queryset_constraint which works on
 your version of Python.""".format(*(REQUIRED_PYTHON + CURRENT_PYTHON)))
     sys.exit(1)
 
@@ -33,7 +33,7 @@ def read(fname):
 
 setup(
     name='django_queryset_constraint',
-    version='0.1.19',
+    version='1.0.0',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     url='https://github.com/magenta-aps/django_queryset_constraint',
     author='Emil Madsen',
@@ -55,9 +55,8 @@ setup(
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Topic :: Internet :: WWW/HTTP',
@@ -69,7 +68,7 @@ setup(
         'django',
     ],
     project_urls={
-        'Source': 'https://github.com/magenta-aps/django_queryset_triggers',
+        'Source': 'https://github.com/magenta-aps/django_queryset_constraint',
         # TODO: Add documentation URL
     },
 )
