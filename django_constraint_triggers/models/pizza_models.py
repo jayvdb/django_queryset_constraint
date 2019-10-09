@@ -37,7 +37,7 @@ class Topping(models.Model):
         # (abeit not pizza), anchovies should never be a topping for anything.
         constraints = [
             models.CheckConstraint(
-                name='Anchovies are not a valid topping for anything.',
+                name='Anchovies are not a valid topping for anything',
                 check=~Q(name='Anchovies'),
             ),
         ]

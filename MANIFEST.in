@@ -5,3 +5,4 @@ recursive-include django_constraint_triggers *.py
 exclude django_constraint_triggers/tests/*
 exclude django_constraint_triggers/models/*
 exclude django_constraint_triggers/migrations/0*
+exclude django_constraint_triggers/__pycache__/*
