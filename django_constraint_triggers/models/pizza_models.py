@@ -1,19 +1,8 @@
 # -*- coding: utf-8 -*-
-from functools import partial
-
 from django.db import models
 from django.db.models import (
     Q,
-    Value,
-    F,
     Count,
-    Exists,
-    Subquery,
-    Case,
-    When
-)
-from django.db.models.expressions import (
-    RawSQL,
 )
 
 from django_constraint_triggers.utils import M

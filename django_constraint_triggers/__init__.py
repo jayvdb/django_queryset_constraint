@@ -1,1 +1,2 @@
-default_app_config = 'django_constraint_triggers.apps.DjangoConstraintTriggersConfig'
+from django_constraint_triggers.utils import M
+from django_constraint_triggers.constraints import QuerysetConstraint

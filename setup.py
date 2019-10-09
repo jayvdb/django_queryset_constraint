@@ -33,7 +33,7 @@ def read(fname):
 
 setup(
     name='django_constraint_triggers',
-    version='0.1.16',
+    version='0.1.17',
     python_requires='>={}.{}'.format(*REQUIRED_PYTHON),
     url='https://github.com/magenta-aps/django_constraint_triggers',
     author='Emil Madsen',
