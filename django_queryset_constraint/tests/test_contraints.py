@@ -1,10 +1,10 @@
-from django.test import SimpleTestCase
+from django.test import TestCase
 
 from django_queryset_constraint.constraints import QuerysetConstraint
 from django_queryset_constraint.models import AllowAll
 
 
-class QuerysetConstraintTests(SimpleTestCase):
+class QuerysetConstraintTests(TestCase):
     def test_equality(self):
         c1 = QuerysetConstraint(AllowAll.objects.all(), name='n1')
         c2 = QuerysetConstraint(AllowAll.objects.all(), name='n2')
