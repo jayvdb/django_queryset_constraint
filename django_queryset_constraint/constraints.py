@@ -97,10 +97,11 @@ class QuerysetConstraint(BaseConstraint):
         )
 
     def __eq__(self, other):
+        if not isinstance(other, QuerysetConstraint):
+            return NotImplemented
         return (
-            isinstance(other, QuerysetConstraint) and
             self.name == other.name and
-            self.queryset == other.queryset
+            str(self.queryset.query) == str(other.queryset.query)
         )
 
     def deconstruct(self):
