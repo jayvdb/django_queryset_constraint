@@ -6,10 +6,10 @@ from django_queryset_constraint.models import AgeModel
 
 class QuerysetConstraintTests(SimpleTestCase):
     def test_equality(self):
-        c1 = QuerysetConstraint(name='n1', AgeModel.objects.all())
-        c2 = QuerysetConstraint(name='n2', AgeModel.objects.all())
-        c3 = QuerysetConstraint(name='n2', AgeModel.objects.filter(age=42))
-        c4 = QuerysetConstraint(name='n3', AgeModel.objects.filter(age=42))
+        c1 = QuerysetConstraint(AgeModel.objects.all(), name='n1')
+        c2 = QuerysetConstraint(AgeModel.objects.all(), name='n2')
+        c3 = QuerysetConstraint(AgeModel.objects.filter(age=42), name='n3')
+        c4 = QuerysetConstraint(AgeModel.objects.filter(age=42), name='n3')
         with self.assertNumQueries(0):
             self.assertNotEqual(c1, self)
         with self.assertNumQueries(0):
