@@ -1,0 +1,14 @@
+[run]
+branch = True
+concurrency = multiprocessing
+parallel = True
+cover_pylib = False
+
+source = django_queryset_constraint
+
+[report]
+fail_under = 90
+skip_covered = True
+omit = 
+    django_queryset_constraint/apps.py
+    django_queryset_constraint/migrations/*
