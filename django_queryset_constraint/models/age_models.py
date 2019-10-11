@@ -56,6 +56,7 @@ class Disallow1QC(AgeModel):
 
 
 class Disallow1ViaQQC(AgeModel):
+    class Meta:
         constraints = [
             QuerysetConstraint(
                 name='QC: Disallow age=1 via Q',
