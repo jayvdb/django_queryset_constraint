@@ -106,6 +106,6 @@ Support Matrix
 ==============
 This app supports the following combinations of Django and Python:
 
-| Django     | Python                  |
-| ---------- | ----------------------- |
-| 2.2        | 3.5, 3.6, 3.7           |
+| Django | Python   |
+| ------ | -------- |
+| 2.2    | 3.6, 3.7 |

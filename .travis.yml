@@ -1,9 +1,10 @@
 language: python
 # List the versions of Python you'd like to test against
 python:
-  - 3.5
   - 3.6
   - 3.7
+  - "3.7-dev"  # 3.7 development branch
+  - "3.8-dev"  # 3.8 development branch
 # List the versions of Django you'd like to test against
 env:
   matrix:
