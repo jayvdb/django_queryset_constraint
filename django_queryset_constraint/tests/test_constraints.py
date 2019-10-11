@@ -32,8 +32,10 @@ class QuerysetConstraintTests(TestCase):
 
     def test_no_constraint_sql(self):
         self.assertEqual(
-            QuerysetConstraint(M().objects.all(), name="n1").constraint_sql(None, None),
-            ""
+            QuerysetConstraint(M().objects.all(), name="n1").constraint_sql(
+                None, None
+            ),
+            "",
         )
 
     @parameterized.expand(
@@ -47,10 +49,12 @@ class QuerysetConstraintTests(TestCase):
     def test_deconstruct(self, name, m_object):
         constraint = QuerysetConstraint(m_object, name)
         path, args, kwargs = constraint.deconstruct()
-        self.assertEqual(path, "django_queryset_constraint.constraints.QuerysetConstraint")
+        self.assertEqual(
+            path, "django_queryset_constraint.constraints.QuerysetConstraint"
+        )
         self.assertEqual(args, [])
-        self.assertEqual(kwargs['name'], name)
-        self.assertEqual(kwargs['queryset'], m_object)
+        self.assertEqual(kwargs["name"], name)
+        self.assertEqual(kwargs["queryset"], m_object)
         reconstructed = QuerysetConstraint(*args, **kwargs)
         self.assertEqual(constraint, reconstructed)
         self.assertEqual(str(constraint), str(reconstructed))
