@@ -1,10 +1,14 @@
 from django.db import connection
 from django.db.models.constraints import BaseConstraint
+from django_queryset_constraint.utils import M
+
 
 class QuerysetConstraint(BaseConstraint):
     def __init__(self, queryset, name):
-        self.queryset = queryset
         super().__init__(name)
+        if not isinstance(queryset, M):
+            raise ValueError("'queryset' should be an M object")
+        self.m_object = queryset
 
     def _generate_names(self, table):
         # We cannot include trigger_name + table as it may be too long.
@@ -19,20 +23,19 @@ class QuerysetConstraint(BaseConstraint):
 
     def _install_trigger(self, schema_editor, model, defer=True, error=None):
         table = model._meta.db_table
+        function_name, trigger_name = self._generate_names(table)
         app_label = model._meta.app_label
         model_name = model._meta.object_name
-
-        function_name, trigger_name = self._generate_names(table)
 
         # No error message - Default to 'Invariant broken'
         if error is None:
             error = 'Invariant broken'
 
         # Run through all operations to generate our queryset
-        self.queryset.app_label = self.queryset.app_label or app_label
-        self.queryset.model_name = self.queryset.model_name or model_name
-        result = self.queryset.replay()
-        # Generate query from queryset
+        result = self.m_object.construct_queryset(
+            app_label, model_name
+        )
+        # Generate query from result
         cursor = connection.cursor()
         sql, sql_params = result.query.get_compiler(using=result.db).as_sql()
         query = cursor.mogrify(sql, sql_params)
@@ -101,14 +104,12 @@ class QuerysetConstraint(BaseConstraint):
             return NotImplemented
         return (
             self.name == other.name and
-            str(self.queryset.query) == str(other.queryset.query)
+            self.m_object == other.m_object
         )
 
     def deconstruct(self):
         path = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
-        path, args, kwargs = (path, (), {'name': self.name})
-        kwargs['queryset'] = self.queryset
-        return path, args, kwargs
-
-
-
+        return path, [], {
+            'name': self.name,
+            'queryset': self.m_object,
+        }

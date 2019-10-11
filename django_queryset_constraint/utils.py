@@ -1,13 +1,15 @@
 from __future__ import unicode_literals
-from django.apps import apps
+import json
+import threading
 from functools import partial
 
+from django.apps import apps
+
 # Thread local storage used for forwarding model/app to recursive M objects
-import threading
 tlocals = threading.local()
 
 
-class M(object):
+class M:
     """A :code:`M()` object is a lazy object utilized in place of Queryset(s).
 
     It is utilized when a Queryset cannot be used directly, for instance when a
@@ -21,7 +23,7 @@ class M(object):
     """
     # TODO: Inherit from queryset + implement destruct() method?
 
-    def __init__(self, model_name=None, app_label=None, operations=None, finalized=False):
+    def __init__(self, model_name_override=None, app_label_override=None, operations=None):
         """Construct an M object.
 
         Args:
@@ -36,35 +38,14 @@ class M(object):
             operations (list of dict, optional):
                 Should not be supplied by the user.
         """
-        self.model_name = model_name
-        self.app_label = app_label
+        self.model_name_override = model_name_override
+        self.app_label_override = app_label_override
         self.operations = operations
-        self.finalized = finalized
+        self.finalized = False
         if self.operations is None:
             self.operations = []
-
-    def __eq__(self, other):
-        return (
-            self.__class__ == other.__class__ and 
-            self.model_name == other.model_name and
-            self.app_label == other.app_label and
-            self.__deep_compare(self.operations, other.operations)
-        )
-
-    @staticmethod
-    def deep_deconstruct(node):
-        if isinstance(node, dict):
-            # Dict comparison
-            for key in node:
-                node[key] = M.deep_deconstruct(node[key])
-        elif isinstance(node, list) or isinstance(node, tuple):
-            node = list(node)
-            for idx in range(len(node)):
-                node[idx] = M.deep_deconstruct(node[idx])
-        elif hasattr(node, 'deconstruct'):
-            node = node.deconstruct()
-            node = M.deep_deconstruct(node)
-        return node
+        else:
+            self.finalized = True
 
     def recursive_unpartial(self, p):
         # Unfold args
@@ -85,10 +66,12 @@ class M(object):
         # Call function with unfolded arguments
         return p.func(*unfolded_args, **unfolded_kwargs)
 
-    def _replay(self):
+    def _construct_queryset(self, app_label, model_name):
         # Run through all operations to generate our queryset
         # TODO: Apply rules recursively to subqueries
-        model = apps.get_model(self.app_label, self.model_name)
+        if app_label is None or model_name is None:
+            raise ValueError("app_label or model_name is None")
+        model = apps.get_model(app_label, model_name)
         result = model
         for operation in self.operations:
             if operation['type'] == '__getitem__':
@@ -111,17 +94,15 @@ class M(object):
                 raise Exception("Unknown operation!")
         return result
 
-    def replay(self):
-        # Pull app_label and model from thread-local storage if empty
-        if not self.app_label:
-            self.app_label = tlocals.app_label
-        if not self.model_name:
-            self.model_name = tlocals.model_name
+    def construct_queryset(self, app_label_default=None, model_name_default=None):
+        # Take default from caller
+        app_label = app_label_default or self.app_label_override or tlocals.app_label
+        model_name = model_name_default or self.model_name_override or tlocals.model_name
         # Update thread-local storage to push it down the stack
-        tlocals.app_label = self.app_label
-        tlocals.model_name = self.model_name
+        tlocals.app_label = app_label
+        tlocals.model_name = model_name
         # Reply to build queryset
-        result = self._replay()
+        result = self._construct_queryset(app_label, model_name)
         # Clean up thread-local storage
         try:
             del tlocals.app_label
@@ -134,58 +115,26 @@ class M(object):
         # Return queryset
         return result
 
-    def __deep_compare_func(self, left, right):
-        # As long as the function and arguments are the same,
-        # we don't care if partials are the exact same object.
-        if isinstance(left, partial):
-            return (
-                left.func == right.func and
-                left.args == right.args
-            )
-        else:
-            return left == right
-
-    def __deep_compare(self, left, right):
-        """Recursive compare for dicts / lists with compare_function.
-        
-        For the compare function, see :code:`__deep_compare_func`.
-        """
-        if type(left) != type(right):
-            return False
-        elif isinstance(left, dict):
-            # Dict comparison
-            for key in left:
-                if key not in right:
-                    return False
-                if not self.__deep_compare(left[key], right[key]):
-                    return False
-            return True
-        elif isinstance(left, list):
-            # List comparison
-            if len(left) != len(right):
-                return False
-            for xleft, xright in zip(left, right):
-                if not self.__deep_compare(xleft, xright):
-                    return False
-            return True
-        return self.__deep_compare_func(left, right)
-
     def __getitem__(self, key):
-        if self.finalized:
-            return self.replay().__getitem__(key)
+        try:
+            return object.__getitem__(self, key)
+        except:
+            if self.finalized:
+                return self.construct_queryset().__getitem__(key)
 
-        if isinstance(key, slice):
-            self.operations.append({'type': '__getitem__', 'key': partial(slice, key.start, key.stop, key.step)})
-        else:
-            self.operations.append({'type': '__getitem__', 'key': key})
-        return self
+            if isinstance(key, slice):
+                self.operations.append({'type': '__getitem__', 'key': partial(slice, key.start, key.stop, key.step)})
+            else:
+                self.operations.append({'type': '__getitem__', 'key': key})
+            return self
 
     def __getattribute__(self, *args, **kwargs):
         try:
             return object.__getattribute__(self, *args, **kwargs)
         except AttributeError as exc:
             if self.finalized:
-                return self.replay().__getattribute__(*args, **kwargs)
+                # Note: Needed to handle M objects inside subquery constructs
+                return self.construct_queryset().__getattribute__(*args, **kwargs)
             self.operations.append({'type': '__getattribute__', 'args': args, 'kwargs': kwargs})
             return self
 
@@ -194,16 +143,55 @@ class M(object):
             return object.__call__(self, *args, **kwargs)
         except TypeError as exc:
             if self.finalized:
-                return self.replay().__call__(*args, **kwargs)
+                # Note: Needed to handle M objects inside subquery constructs
+                return self.construct_queryset().__call__(self, *args, **kwargs)
             self.operations.append({'type': '__call__', 'args': args, 'kwargs': kwargs})
             return self
 
     def deconstruct(self):
-        return 'django_queryset_constraint.utils.' + self.__class__.__name__, [], {
-            'model_name': self.model_name,
-            'app_label': self.app_label,
+        path = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
+        kwargs = {
             'operations': self.operations,
-            'finalized': True,
         }
+        if self.model_name_override is not None:
+            kwargs['model_name_override'] = self.model_name_override
+        if self.app_label_override is not None:
+            kwargs['app_label_override'] = self.app_label_override
+        return path, [], kwargs
 
+    def __eq__(self, other):
+        if not isinstance(other, M):
+            return NotImplemented
+        # Note: We cannot use self.operations == other.operations as we end up
+        #       comparing BaseExpressions containing M objects (recursively).
+        #       This comparison depends on M objects being hashable.
+        return self.as_json() == other.as_json()
 
+    def as_json(self):
+        def deconstructor(argument):
+            # Attempt to deconstruct
+            try:
+                result = argument.deconstruct()
+                if len(result) == 4:
+                    name, path, args, kwargs = result
+                else:  # if len(result) == 3:
+                    path, args, kwargs = result
+            # If we cannot deconstruct, use repr instead
+            except AttributeError:
+                path = repr(argument)
+                args = []
+                kwargs = []
+            # Convert to json string recursively, by deconstructing each step
+            json_string = json.dumps({
+                'path': path,
+                'args': args,
+                'kwargs': kwargs
+            }, default=lambda o: deconstructor(o), sort_keys=True)
+            # Convert back to dict after handling all the deconstruction
+            return json.loads(json_string)
+        # Convert entire object to json string
+        json_string = json.dumps(deconstructor(self), sort_keys=True)
+        return json_string
+
+    def __str__(self):
+        return self.as_json()
