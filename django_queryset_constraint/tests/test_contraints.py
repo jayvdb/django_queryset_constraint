@@ -7,10 +7,10 @@ from django_queryset_constraint.models import Pizza
 
 class QuerysetConstraintTests(TestCase):
     def test_equality(self):
-        c1 = QuerysetConstraint(M().objects.all(), name='n1')
-        c2 = QuerysetConstraint(M().objects.all(), name='n2')
-        c3 = QuerysetConstraint(M().objects.filter(age=42), name='n2')
-        c4 = QuerysetConstraint(M().objects.filter(age=42), name='n2')
+        c1 = QuerysetConstraint(M().objects.all(), name="n1")
+        c2 = QuerysetConstraint(M().objects.all(), name="n2")
+        c3 = QuerysetConstraint(M().objects.filter(age=42), name="n2")
+        c4 = QuerysetConstraint(M().objects.filter(age=42), name="n2")
         with self.assertNumQueries(0):
             self.assertNotEqual(c1, self)
             self.assertNotEqual(c2, self)
@@ -28,4 +28,4 @@ class QuerysetConstraintTests(TestCase):
 
     def test_cannot_provide_real_queryset(self):
         with self.assertRaises(ValueError):
-            QuerysetConstraint(Pizza.objects.all(), name='pizza')
+            QuerysetConstraint(Pizza.objects.all(), name="pizza")

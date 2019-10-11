@@ -18,6 +18,7 @@ install:
   - pip install -q Django==$DJANGO_VERSION
 
 script:
+  - python -m black . -l 80 --check
   - python manage.py makemigrations
   - python manage.py migrate
   - python manage.py test

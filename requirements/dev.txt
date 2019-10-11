@@ -1,0 +1,2 @@
+-r common.txt
+black==19.3b0

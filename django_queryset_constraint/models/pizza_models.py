@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.db.models import (
-    Q,
-    Count,
-)
+from django.db.models import Q, Count
 
 from django_queryset_constraint.utils import M
 from django_queryset_constraint.constraints import QuerysetConstraint
@@ -18,7 +15,7 @@ class ToppingNC(models.Model):
 
 
 class PizzaToppingNC(models.Model):
-    pizza = models.ForeignKey('PizzaNC', on_delete=models.CASCADE)
+    pizza = models.ForeignKey("PizzaNC", on_delete=models.CASCADE)
     topping = models.ForeignKey(ToppingNC, on_delete=models.CASCADE)
 
 
@@ -37,10 +34,11 @@ class Topping(models.Model):
         # (abeit not pizza), anchovies should never be a topping for anything.
         constraints = [
             models.CheckConstraint(
-                name='Anchovies are not a valid topping for anything',
-                check=~Q(name='Anchovies'),
-            ),
+                name="Anchovies are not a valid topping for anything",
+                check=~Q(name="Anchovies"),
+            )
         ]
+
     name = models.CharField(max_length=30)
 
     def __str__(self):
@@ -53,25 +51,20 @@ class PizzaTopping(models.Model):
         constraints = [
             # A pizza with more than 5 toppings gets soggy
             QuerysetConstraint(
-                name='At most 5 toppings',
-                queryset=M().objects.values(
-                    'pizza'
-                ).annotate(
-                    num_toppings=Count('topping')
-                ).filter(
-                    num_toppings__gt=5
-                ),
+                name="At most 5 toppings",
+                queryset=M()
+                .objects.values("pizza")
+                .annotate(num_toppings=Count("topping"))
+                .filter(num_toppings__gt=5),
             ),
             # This constraint should be self-explanatory for civilized people
             QuerysetConstraint(
-                name='No pineapple',
-                queryset=M().objects.filter(
-                    topping__name="Pineapple"
-                )
+                name="No pineapple",
+                queryset=M().objects.filter(topping__name="Pineapple"),
             ),
         ]
 
-    pizza = models.ForeignKey('Pizza', on_delete=models.CASCADE)
+    pizza = models.ForeignKey("Pizza", on_delete=models.CASCADE)
     topping = models.ForeignKey(Topping, on_delete=models.CASCADE)
 
 

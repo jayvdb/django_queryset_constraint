@@ -21,9 +21,12 @@ class M:
     to the M object, such that these operations can be replayed to reconstruct
     the Queryset at a later time.
     """
+
     # TODO: Inherit from queryset + implement destruct() method?
 
-    def __init__(self, model_name_override=None, app_label_override=None, operations=None):
+    def __init__(
+        self, model_name_override=None, app_label_override=None, operations=None
+    ):
         """Construct an M object.
 
         Args:
@@ -74,30 +77,40 @@ class M:
         model = apps.get_model(app_label, model_name)
         result = model
         for operation in self.operations:
-            if operation['type'] == '__getitem__':
-                arg = operation['key']
+            if operation["type"] == "__getitem__":
+                arg = operation["key"]
                 if isinstance(arg, partial):
                     arg = self.recursive_unpartial(arg)
                 result = result.__getitem__(arg)
-            elif operation['type'] == '__getattribute__':
-                result = getattr(result, *operation['args'], **operation['kwargs'])
-            elif operation['type'] == '__call__':
-                operation['args'] = list(operation['args'])
-                for idx, arg in enumerate(operation['args']):
+            elif operation["type"] == "__getattribute__":
+                result = getattr(
+                    result, *operation["args"], **operation["kwargs"]
+                )
+            elif operation["type"] == "__call__":
+                operation["args"] = list(operation["args"])
+                for idx, arg in enumerate(operation["args"]):
                     if isinstance(arg, partial):
-                        operation['args'][idx] = self.recursive_unpartial(arg)
-                for arg in operation['kwargs']:
-                    if isinstance(operation['kwargs'][arg], partial):
-                        operation['kwargs'][arg] = self.recursive_unpartial(operation['kwargs'][arg])
-                result = result(*operation['args'], **operation['kwargs'])
+                        operation["args"][idx] = self.recursive_unpartial(arg)
+                for arg in operation["kwargs"]:
+                    if isinstance(operation["kwargs"][arg], partial):
+                        operation["kwargs"][arg] = self.recursive_unpartial(
+                            operation["kwargs"][arg]
+                        )
+                result = result(*operation["args"], **operation["kwargs"])
             else:
                 raise Exception("Unknown operation!")
         return result
 
-    def construct_queryset(self, app_label_default=None, model_name_default=None):
+    def construct_queryset(
+        self, app_label_default=None, model_name_default=None
+    ):
         # Take default from caller
-        app_label = app_label_default or self.app_label_override or tlocals.app_label
-        model_name = model_name_default or self.model_name_override or tlocals.model_name
+        app_label = (
+            app_label_default or self.app_label_override or tlocals.app_label
+        )
+        model_name = (
+            model_name_default or self.model_name_override or tlocals.model_name
+        )
         # Update thread-local storage to push it down the stack
         tlocals.app_label = app_label
         tlocals.model_name = model_name
@@ -123,9 +136,14 @@ class M:
                 return self.construct_queryset().__getitem__(key)
 
             if isinstance(key, slice):
-                self.operations.append({'type': '__getitem__', 'key': partial(slice, key.start, key.stop, key.step)})
+                self.operations.append(
+                    {
+                        "type": "__getitem__",
+                        "key": partial(slice, key.start, key.stop, key.step),
+                    }
+                )
             else:
-                self.operations.append({'type': '__getitem__', 'key': key})
+                self.operations.append({"type": "__getitem__", "key": key})
             return self
 
     def __getattribute__(self, *args, **kwargs):
@@ -134,8 +152,12 @@ class M:
         except AttributeError as exc:
             if self.finalized:
                 # Note: Needed to handle M objects inside subquery constructs
-                return self.construct_queryset().__getattribute__(*args, **kwargs)
-            self.operations.append({'type': '__getattribute__', 'args': args, 'kwargs': kwargs})
+                return self.construct_queryset().__getattribute__(
+                    *args, **kwargs
+                )
+            self.operations.append(
+                {"type": "__getattribute__", "args": args, "kwargs": kwargs}
+            )
             return self
 
     def __call__(self, *args, **kwargs):
@@ -145,18 +167,18 @@ class M:
             if self.finalized:
                 # Note: Needed to handle M objects inside subquery constructs
                 return self.construct_queryset().__call__(self, *args, **kwargs)
-            self.operations.append({'type': '__call__', 'args': args, 'kwargs': kwargs})
+            self.operations.append(
+                {"type": "__call__", "args": args, "kwargs": kwargs}
+            )
             return self
 
     def deconstruct(self):
-        path = '%s.%s' % (self.__class__.__module__, self.__class__.__name__)
-        kwargs = {
-            'operations': self.operations,
-        }
+        path = "%s.%s" % (self.__class__.__module__, self.__class__.__name__)
+        kwargs = {"operations": self.operations}
         if self.model_name_override is not None:
-            kwargs['model_name_override'] = self.model_name_override
+            kwargs["model_name_override"] = self.model_name_override
         if self.app_label_override is not None:
-            kwargs['app_label_override'] = self.app_label_override
+            kwargs["app_label_override"] = self.app_label_override
         return path, [], kwargs
 
     def __eq__(self, other):
@@ -182,13 +204,14 @@ class M:
                 args = []
                 kwargs = []
             # Convert to json string recursively, by deconstructing each step
-            json_string = json.dumps({
-                'path': path,
-                'args': args,
-                'kwargs': kwargs
-            }, default=lambda o: deconstructor(o), sort_keys=True)
+            json_string = json.dumps(
+                {"path": path, "args": args, "kwargs": kwargs},
+                default=lambda o: deconstructor(o),
+                sort_keys=True,
+            )
             # Convert back to dict after handling all the deconstruction
             return json.loads(json_string)
+
         # Convert entire object to json string
         json_string = json.dumps(deconstructor(self), sort_keys=True)
         return json_string
