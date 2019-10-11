@@ -20,8 +20,8 @@ install:
 
 script:
   - python -m black . -l 80 --check
+  - python -m isort -c
   - python manage.py makemigrations
   - python manage.py migrate
-  - python -m coverage coverage run --source='.' manage.py test --parallel
-  - python -m coverage report --skip-covered --omit="setup.py,interface/wsgi.py,django_queryset_constraint/tests/*,django_queryset_constraint/migrations/*"
-  - python -m isort -c
+  - python -m coverage run --source='.' manage.py test --parallel
+  - python -m coverage report --omit="setup.py,interface/wsgi.py,django_queryset_constraint/tests/*,django_queryset_constraint/migrations/*,django_queryset_constraint/apps.py" --fail-under=80

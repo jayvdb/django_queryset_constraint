@@ -59,8 +59,6 @@ from django_queryset_constraint import M, QuerysetConstraint
 class Topping(models.Model):
     name = models.CharField(max_length=30)
 
-    def __str__(self):
-        return self.name
 
 class PizzaTopping(models.Model):
     class Meta:
@@ -92,9 +90,6 @@ class PizzaTopping(models.Model):
 class Pizza(models.Model):
     name = models.CharField(max_length=30)
     toppings = models.ManyToManyField(Topping, through=PizzaTopping)
-
-    def __str__(self):
-        return self.name
 ```
 
 - Make migrations: `python manage.py makemigrations`

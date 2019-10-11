@@ -10,9 +10,6 @@ from django_queryset_constraint.utils import M
 class ToppingNC(models.Model):
     name = models.CharField(max_length=30)
 
-    def __str__(self):
-        return self.name
-
 
 class PizzaToppingNC(models.Model):
     pizza = models.ForeignKey("PizzaNC", on_delete=models.CASCADE)
@@ -22,9 +19,6 @@ class PizzaToppingNC(models.Model):
 class PizzaNC(models.Model):
     name = models.CharField(max_length=30)
     toppings = models.ManyToManyField(ToppingNC, through=PizzaToppingNC)
-
-    def __str__(self):
-        return self.name
 
 
 # Limited toppings pizzas
@@ -40,9 +34,6 @@ class Topping(models.Model):
         ]
 
     name = models.CharField(max_length=30)
-
-    def __str__(self):
-        return self.name
 
 
 class PizzaTopping(models.Model):
@@ -71,6 +62,3 @@ class PizzaTopping(models.Model):
 class Pizza(models.Model):
     name = models.CharField(max_length=30)
     toppings = models.ManyToManyField(Topping, through=PizzaTopping)
-
-    def __str__(self):
-        return self.name
