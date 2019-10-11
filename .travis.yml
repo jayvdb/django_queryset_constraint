@@ -24,4 +24,4 @@ script:
   - python manage.py makemigrations
   - python manage.py migrate
   - python -m coverage run --source='.' manage.py test --parallel
-  - python -m coverage report --omit="setup.py,interface/wsgi.py,django_queryset_constraint/tests/*,django_queryset_constraint/migrations/*,django_queryset_constraint/apps.py" --fail-under=85
+  - python -m coverage report --omit="setup.py,interface/*,django_queryset_constraint/tests/*,django_queryset_constraint/migrations/*,django_queryset_constraint/apps.py" --fail-under=85
