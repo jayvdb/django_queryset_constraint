@@ -25,7 +25,6 @@ from django_queryset_constraint.models.age_models import (
     Disallow13SubquerySliceQC,
     Disallow13WhenQC,
 )
-
 from django_queryset_constraint.models.pizza_models import (
     Pizza,
     PizzaNC,
