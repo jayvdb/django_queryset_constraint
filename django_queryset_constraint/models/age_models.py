@@ -2,11 +2,11 @@
 from functools import partial
 
 from django.db import models
-from django.db.models import Q, Value, F, Count, Exists, Subquery, Case, When
+from django.db.models import Case, Count, Exists, F, Q, Subquery, Value, When
 from django.db.models.expressions import RawSQL
 
-from django_queryset_constraint.utils import M
 from django_queryset_constraint.constraints import QuerysetConstraint
+from django_queryset_constraint.utils import M
 
 
 # TODO: Move these models into test

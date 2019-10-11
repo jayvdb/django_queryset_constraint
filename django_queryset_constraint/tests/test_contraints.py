@@ -1,7 +1,6 @@
 from django.test import TestCase
 
-from django_queryset_constraint import QuerysetConstraint, M
-from django_queryset_constraint.models import Pizza
+from django_queryset_constraint import M, QuerysetConstraint
 from django_queryset_constraint.models import Pizza
 
 

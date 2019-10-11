@@ -1,19 +1,17 @@
 """The main test module."""
 import django
 from django.apps import apps
-from django.test import TransactionTestCase
-from django.db import models
+from django.db import models, transaction
 from django.db.utils import IntegrityError
-from django.db import transaction
-
+from django.test import TransactionTestCase
 from parameterized import parameterized, parameterized_class
 
 from django_queryset_constraint.models.pizza_models import (
     Pizza,
-    PizzaTopping,
-    Topping,
     PizzaNC,
+    PizzaTopping,
     PizzaToppingNC,
+    Topping,
     ToppingNC,
 )
 

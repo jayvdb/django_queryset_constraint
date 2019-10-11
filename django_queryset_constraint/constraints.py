@@ -1,5 +1,6 @@
 from django.db import connection
 from django.db.models.constraints import BaseConstraint
+
 from django_queryset_constraint.utils import M
 
 
@@ -92,6 +93,9 @@ class QuerysetConstraint(BaseConstraint):
         if not isinstance(other, QuerysetConstraint):
             return NotImplemented
         return self.name == other.name and self.m_object == other.m_object
+
+    def __str__(self):
+        return self.name + " : " + str(self.m_object)
 
     def deconstruct(self):
         path = "%s.%s" % (self.__class__.__module__, self.__class__.__name__)

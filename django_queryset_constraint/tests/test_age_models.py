@@ -1,13 +1,11 @@
 """The main test module."""
-from unittest import skipIf, skip
+from unittest import skip, skipIf
 
 import django
 from django.apps import apps
-from django.test import TransactionTestCase
-from django.db import models
+from django.db import models, transaction
 from django.db.utils import IntegrityError
-from django.db import transaction
-
+from django.test import TransactionTestCase
 from parameterized import parameterized, parameterized_class
 
 

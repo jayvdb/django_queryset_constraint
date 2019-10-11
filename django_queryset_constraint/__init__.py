@@ -1,2 +1,2 @@
-from django_queryset_constraint.utils import M
 from django_queryset_constraint.constraints import QuerysetConstraint
+from django_queryset_constraint.utils import M
