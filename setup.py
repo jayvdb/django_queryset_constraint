@@ -37,7 +37,7 @@ def read(fname):
 
 setup(
     name="django_queryset_constraint",
-    version="1.0.2",
+    version="1.0.3",
     python_requires=">={}.{}".format(*REQUIRED_PYTHON),
     url="https://github.com/magenta-aps/django_queryset_constraint",
     author="Emil Madsen",
