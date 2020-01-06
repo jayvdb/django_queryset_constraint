@@ -30,7 +30,7 @@ class QuerysetConstraint(BaseConstraint):
 
         # No error message - Default to 'Invariant broken'
         if error is None:
-            error = "Invariant broken" + self.name
+            error = "Invariant broken: " + self.name
 
         # Run through all operations to generate our queryset
         result = self.m_object.construct_queryset(app_label, model_name)
