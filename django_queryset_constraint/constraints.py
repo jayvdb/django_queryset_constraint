@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import connection
 from django.db.models.constraints import BaseConstraint
 
@@ -16,10 +18,13 @@ class QuerysetConstraint(BaseConstraint):
         # Thus we need to truncate. Postgres limits us to 63 characters.
         # We know our prefix is 13 characters, thus we need to limit to 50.
         # To be safe, we will limit to 40.
-        hashy = hex(hash(self.name + table))[3 : 40 + 3]
+        hasher = hashlib.sha256()
+        hasher.update(self.name.encode('utf8'))
+        hasher.update(table.encode('utf8'))
+        hashed_name = m.hexdigest()[3 : 40 + 3]
         # Prepare function and trigger name
-        function_name = "__".join(["dct", "func", hashy]) + "()"
-        trigger_name = "__".join(["dct", "trig", hashy])
+        function_name = "__".join(["dct", "func", hashed_name]) + "()"
+        trigger_name = "__".join(["dct", "trig", hashed_name])
         return function_name, trigger_name
 
     def _install_trigger(self, schema_editor, model, defer=True, error=None):
@@ -72,8 +77,13 @@ class QuerysetConstraint(BaseConstraint):
         return schema_editor.execute(function + trigger)
 
     def _remove_trigger(self, schema_editor, model):
-        table = model._meta.db_table
-        function_name, trigger_name = self._generate_names(table)
+        if self.name.startswith('dct__'):
+            hashed_name = self.name.split("__")[2]
+            function_name = "__".join(["dct", "func", hashed_name]) + "()"
+            trigger_name = "__".join(["dct", "trig", hashed_name])
+        else:
+            table = model._meta.db_table
+            function_name, trigger_name = self._generate_names(table)
         # Remove trigger
         return schema_editor.execute(
             "DROP TRIGGER {} ON {};".format(trigger_name, table)

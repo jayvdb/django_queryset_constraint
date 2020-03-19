@@ -3,6 +3,11 @@ CHANGELOG
 =========
 
 --------
+v. 1.0.5
+--------
+Fixed broken use of `hash()`, such that trigger names should now be consistent.
+
+--------
 v. 1.0.0
 --------
 
