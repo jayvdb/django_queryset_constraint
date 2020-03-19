@@ -21,7 +21,7 @@ class QuerysetConstraint(BaseConstraint):
         hasher = hashlib.sha256()
         hasher.update(self.name.encode('utf8'))
         hasher.update(table.encode('utf8'))
-        hashed_name = m.hexdigest()[3 : 40 + 3]
+        hashed_name = hasher.hexdigest()[3 : 40 + 3]
         # Prepare function and trigger name
         function_name = "__".join(["dct", "func", hashed_name]) + "()"
         trigger_name = "__".join(["dct", "trig", hashed_name])
