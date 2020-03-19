@@ -19,8 +19,8 @@ class QuerysetConstraint(BaseConstraint):
         # We know our prefix is 13 characters, thus we need to limit to 50.
         # To be safe, we will limit to 40.
         hasher = hashlib.sha256()
-        hasher.update(self.name.encode('utf8'))
-        hasher.update(table.encode('utf8'))
+        hasher.update(self.name.encode("utf8"))
+        hasher.update(table.encode("utf8"))
         hashed_name = hasher.hexdigest()[3 : 40 + 3]
         # Prepare function and trigger name
         function_name = "__".join(["dct", "func", hashed_name]) + "()"
@@ -77,7 +77,7 @@ class QuerysetConstraint(BaseConstraint):
         return schema_editor.execute(function + trigger)
 
     def _remove_trigger(self, schema_editor, model):
-        if self.name.startswith('dct__'):
+        if self.name.startswith("dct__"):
             hashed_name = self.name.split("__")[2]
             function_name = "__".join(["dct", "func", hashed_name]) + "()"
             trigger_name = "__".join(["dct", "trig", hashed_name])
