@@ -107,10 +107,12 @@ class M:
     ):
         # Take default from caller
         app_label = (
-            self.app_label_override or app_label_default or tlocals.app_label
+            self.app_label_override or app_label_default or
+            getattr(tlocals, 'app_label', None)
         )
         model_name = (
-            self.model_name_override or model_name_default or tlocals.model_name
+            self.model_name_override or model_name_default or
+            getattr(tlocals, 'model_name', None)
         )
         # Update thread-local storage to push it down the stack
         tlocals.app_label = app_label
