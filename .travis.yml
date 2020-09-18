@@ -3,10 +3,13 @@ language: python
 python:
   - 3.6
   - 3.7
+  - 3.8
 # List the versions of Django you'd like to test against
 env:
   matrix:
    - DJANGO_VERSION=2.2
+   - DJANGO_VERSION=3.0
+   - DJANGO_VERSION=3.1
 
 services:
   - postgresql
